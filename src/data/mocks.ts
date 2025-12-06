@@ -62,5 +62,7 @@ export const MOCK_INVOICES: Invoice[] = [
         projectId: 'p3',
         status: 'Sent',
         isAdvance: true,
+        taxRate: 21,
+        concept: 'Anticipo Proyecto P3',
     }
 ];
