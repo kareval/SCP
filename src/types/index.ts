@@ -102,9 +102,14 @@ export interface Invoice {
     id: string;
     number: string;
     date: string;
+    dueDate?: string; // New: Date payment is expected
+    paymentDate?: string; // New: Date payment was received
     amount: number;
+    taxRate: number; // New: Default 21%
+    concept: string; // New: Description
+    notes?: string; // New: Internal notes
     projectId: string;
-    status: 'Draft' | 'Sent' | 'Paid';
+    status: 'Draft' | 'Sent' | 'Paid' | 'Overdue'; // New: Overdue status
     isAdvance: boolean;
 }
 
@@ -118,3 +123,5 @@ export interface MonthlyStatement {
         notes?: string;
     }[];
 }
+
+export type BillingStatus = 'UpToDate' | 'ReadyToBill' | 'Overdue';

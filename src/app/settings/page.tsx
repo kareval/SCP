@@ -1,42 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, doc, writeBatch } from 'firebase/firestore';
-import { MOCK_PROJECTS, MOCK_INVOICES, MOCK_CLIENTS } from '@/data/mocks';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { adminService } from '@/services/adminService';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { AlertTriangle, Database, Trash2, RefreshCw } from 'lucide-react';
 
 export default function SettingsPage() {
     const { logout } = useAuth();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-    const seedDatabase = async () => {
+    const handleSeedDatabase = async () => {
+        if (!confirm('¿Estás seguro? Esto sobrescribirá datos existentes si coinciden los IDs.')) return;
+
         setLoading(true);
         setMessage('Iniciando carga de datos...');
         try {
-            const batch = writeBatch(db);
-
-            // Seed Clients
-            MOCK_CLIENTS.forEach((client) => {
-                const ref = doc(collection(db, 'clients'), client.id);
-                batch.set(ref, client);
-            });
-
-            // Seed Projects
-            MOCK_PROJECTS.forEach((project) => {
-                const ref = doc(collection(db, 'projects'), project.id);
-                batch.set(ref, project);
-            });
-
-            // Seed Invoices
-            MOCK_INVOICES.forEach((invoice) => {
-                const ref = doc(collection(db, 'invoices'), invoice.id);
-                batch.set(ref, invoice);
-            });
-
-            await batch.commit();
+            await adminService.seedDatabase();
             setMessage('¡Base de datos cargada con éxito!');
         } catch (error) {
             console.error(error);
@@ -46,41 +28,95 @@ export default function SettingsPage() {
         }
     };
 
+    const handleClearDatabase = async () => {
+        const confirmation = prompt('PELIGRO: Esto borrará TODOS los datos (Proyectos, Facturas, Clientes). Escribe "BORRAR" para confirmar.');
+        if (confirmation !== 'BORRAR') return;
+
+        setLoading(true);
+        setMessage('Borrando base de datos...');
+        try {
+            await adminService.clearDatabase();
+            setMessage('¡Base de datos borrada completamente!');
+            // Optional: Reload to clear state
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            setMessage('Error al borrar datos: ' + (error as Error).message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-slate-900">Configuración</h1>
+        <div className="space-y-6 max-w-4xl mx-auto p-6">
+            <h1 className="text-3xl font-bold text-slate-900">Configuración del Sistema</h1>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Gestión de Datos</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <Database className="h-5 w-5" />
+                        Gestión de Datos
+                    </CardTitle>
+                    <CardDescription>Herramientas para administrar los datos de la aplicación.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <p className="text-sm text-slate-500">
-                        Utiliza este botón para cargar los datos de prueba iniciales en la base de datos de Firestore.
-                        ¡Cuidado! Esto podría sobrescribir datos existentes si coinciden los IDs.
-                    </p>
-                    <button
-                        onClick={seedDatabase}
-                        disabled={loading}
-                        className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-                    >
-                        {loading ? 'Cargando...' : 'Cargar Datos de Prueba (Seed)'}
-                    </button>
-                    {message && <p className="text-sm font-medium text-slate-900">{message}</p>}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-slate-50">
+                        <div>
+                            <h3 className="font-medium">Cargar Datos de Prueba (Seed)</h3>
+                            <p className="text-sm text-slate-500">Rellena la base de datos con proyectos y facturas de ejemplo.</p>
+                        </div>
+                        <Button
+                            onClick={handleSeedDatabase}
+                            disabled={loading}
+                            variant="outline"
+                        >
+                            {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                            Cargar Datos
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
+
+            <Card className="border-red-200 bg-red-50">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-700">
+                        <AlertTriangle className="h-5 w-5" />
+                        Zona de Peligro
+                    </CardTitle>
+                    <CardDescription className="text-red-600/80">Acciones destructivas e irreversibles.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-white">
+                        <div>
+                            <h3 className="font-medium text-red-700">Borrar Base de Datos</h3>
+                            <p className="text-sm text-red-600/70">Elimina permanentemente todos los proyectos, facturas y clientes.</p>
+                        </div>
+                        <Button
+                            onClick={handleClearDatabase}
+                            disabled={loading}
+                            variant="destructive"
+                        >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Borrar Todo
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {message && (
+                <div className={`p-4 rounded-md ${message.includes('Error') ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                    {message}
+                </div>
+            )}
 
             <Card>
                 <CardHeader>
                     <CardTitle>Sesión</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <button
-                        onClick={logout}
-                        className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-                    >
+                    <Button onClick={logout} variant="secondary">
                         Cerrar Sesión
-                    </button>
+                    </Button>
                 </CardContent>
             </Card>
         </div>
