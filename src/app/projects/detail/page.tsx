@@ -261,7 +261,15 @@ function ProjectDetailsContent() {
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-primary-dark/60">Presupuesto</CardTitle>
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="text-sm font-medium text-primary-dark/60">Presupuesto</CardTitle>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
+                                    <TooltipContent><p>Valor total del contrato (BAC).</p></TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
@@ -307,7 +315,15 @@ function ProjectDetailsContent() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-primary-dark/60">Facturado</CardTitle>
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="text-sm font-medium text-primary-dark/60">Facturado</CardTitle>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
+                                    <TooltipContent><p>Importe total enviado al cliente (Facturas emitidas).</p></TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-primary-dark">{billed.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
@@ -339,7 +355,15 @@ function ProjectDetailsContent() {
                         : "bg-gray-50"
                 }>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-primary-dark/60">Margen</CardTitle>
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="text-sm font-medium text-primary-dark/60">Margen</CardTitle>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
+                                    <TooltipContent><p>(Revenue - Coste) / Revenue. Rentabilidad actual.</p></TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className={`text-2xl font-bold ${project.revenueMethod === 'Input' ? ((revenue - totalIncurredCosts) / revenue) < 0.2 ? "text-red-700" : "text-green-700" : "text-gray-500"}`}>

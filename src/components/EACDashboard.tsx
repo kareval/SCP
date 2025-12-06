@@ -80,18 +80,45 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-primary-dark mb-1">Presupuesto Total (BAC)</label>
+
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="text-sm font-medium text-primary-dark">Presupuesto Total (BAC)</label>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Budget at Completion. Presupuesto total aprobado para el proyecto.</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                             <div className="text-2xl font-bold text-primary-dark">{BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-primary-dark mb-1">Coste Real Actual (AC)</label>
+
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="text-sm font-medium text-primary-dark">Coste Real Actual (AC)</label>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Actual Cost. Coste real incurrido hasta la fecha (Horas + Gastos).</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                             <div className="text-2xl font-bold text-primary-dark">{AC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                             <p className="text-xs text-primary-dark/60 mt-1">Suma de todos los costes registrados.</p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-primary-dark mb-2">Avance Físico Real (%)</label>
+
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-sm font-medium text-primary-dark">Avance Físico Real (%)</label>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Porcentaje de completitud real del alcance, independiente del coste.</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                             <div className="flex items-center gap-4">
                                 <input
                                     type="range"
@@ -285,7 +312,15 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
                         {/* Billing Forecast Summary */}
                         {project.billingForecast && project.billingForecast.length > 0 && (
                             <div className="col-span-1 md:col-span-3 mt-4 pt-4 border-t border-gray-200">
-                                <h4 className="text-sm font-semibold text-primary-dark mb-2">Previsión de Flujo de Caja (Próximos 3 meses)</h4>
+                                <div className="flex justify-between items-center mb-2">
+                                    <h4 className="text-sm font-semibold text-primary-dark">Previsión de Flujo de Caja (Próximos 3 meses)</h4>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                            <TooltipContent><p>Estimación de facturación futura basada en hitos o calendario.</p></TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     {project.billingForecast
                                         .filter(item => new Date(item.date) >= new Date())
