@@ -1,0 +1,83 @@
+
+> scp-system@0.1.0 build
+> next build
+
+   Ôû▓ Next.js 16.0.7 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 2 errors:
+./Control presupuesto de proyectos/src/app/contracts/edit/[id]/page.tsx:11:8
+Next.js can't recognize the exported `generateStaticParams` field in route. App pages cannot use both "use client" and export function "generateStaticParams()".
+   9 | import Link from 'next/link';
+  10 |
+> 11 | export async function generateStaticParams() {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |     const contracts = await contractService.getContracts();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     return contracts.map((contract) => ({
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 14 |         id: contract.id,
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 15 |     }));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 16 | }
+     | ^^
+  17 |
+  18 | export default function EditContractPage({ params }: { params: Promise<{ id: string }> }) {
+  19 |     const router = useRouter();
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+Import traces:
+  Client Component Browser:
+    ./Control presupuesto de proyectos/src/app/contracts/edit/[id]/page.tsx [Client Component Browser]
+    ./Control presupuesto de proyectos/src/app/contracts/edit/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Control presupuesto de proyectos/src/app/contracts/edit/[id]/page.tsx [Client Component SSR]
+    ./Control presupuesto de proyectos/src/app/contracts/edit/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config
+
+
+./Control presupuesto de proyectos/src/app/projects/edit/[id]/page.tsx:12:8
+Next.js can't recognize the exported `generateStaticParams` field in route. App pages cannot use both "use client" and export function "generateStaticParams()".
+  10 | import Link from 'next/link';
+  11 |
+> 12 | export async function generateStaticParams() {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     const projects = await projectService.getProjects();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 14 |     return projects.map((project) => ({
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 15 |         id: project.id,
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 16 |     }));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 17 | }
+     | ^^
+  18 |
+  19 | export default function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  20 |     const router = useRouter();
+
+The exported configuration object in a source file needs to have a very specific format from which some properties can be statically parsed at compiled-time.
+
+Import traces:
+  Client Component Browser:
+    ./Control presupuesto de proyectos/src/app/projects/edit/[id]/page.tsx [Client Component Browser]
+    ./Control presupuesto de proyectos/src/app/projects/edit/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Control presupuesto de proyectos/src/app/projects/edit/[id]/page.tsx [Client Component SSR]
+    ./Control presupuesto de proyectos/src/app/projects/edit/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config
+
+
+    at <unknown> (./Control presupuesto de proyectos/src/app/contracts/edit/[id]/page.tsx:11:8)
+    at <unknown> (https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config)
+    at <unknown> (./Control presupuesto de proyectos/src/app/projects/edit/[id]/page.tsx:12:8)
+    at <unknown> (https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config)

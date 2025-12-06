@@ -1,0 +1,15 @@
+
+> scp-system@0.1.0 lint
+> eslint
+
+
+C:\Documentos LOCAL\Programaci├│n\Proyectos\Control presupuesto de proyectos\src\app\projects\[id]\page.tsx
+   57:8    warning  React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  153:138  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                               react/no-unescaped-entities
+  153:145  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                               react/no-unescaped-entities
+
+C:\Documentos LOCAL\Programaci├│n\Proyectos\Control presupuesto de proyectos\src\lib\pdfGenerator.ts
+  5:63  warning  '_invoices' is defined but never used  @typescript-eslint/no-unused-vars
+
+Ô£û 4 problems (2 errors, 2 warnings)
+

@@ -1,0 +1,120 @@
+export type ProjectStatus = 'Draft' | 'Budgeted' | 'Approved' | 'In Progress' | 'Justified' | 'Accepted' | 'Billed' | 'Closed';
+
+export interface Client {
+    id: string;
+    name: string;
+    contactPerson: string;
+    email: string;
+}
+
+export interface BudgetLine {
+    id: string;
+    concept: string;
+    amount: number;
+    type: 'CAPEX' | 'OPEX';
+}
+
+export type ProjectType = 'TM' | 'Fixed';
+
+export interface WorkLog {
+    id: string;
+    projectId: string;
+    date: string;
+    concept: string;
+    amount: number; // Revenue recognized
+    hours?: number; // Optional for T&M
+}
+
+export type RevenueMethod = 'Input' | 'Output';
+
+export interface Milestone {
+    id: string;
+    name: string;
+    percentage: number;
+    completed: boolean;
+}
+
+export interface Contract {
+    id: string;
+    code?: string; // Short identifier (e.g., C-2024-001)
+    title: string;
+    clientId: string;
+    tcv: number; // Total Contract Value
+    startDate: string;
+    endDate: string;
+    status: 'Active' | 'Closed';
+}
+
+export interface Project {
+    id: string;
+    contractId?: string; // Link to Parent Contract
+    title: string;
+    clientId: string;
+    status: ProjectStatus;
+    type: ProjectType;
+    budget: number;
+    justifiedAmount: number; // Revenue Recognized
+    billedAmount: number;
+    completionPercentage?: number; // For Fixed Price (Legacy/Simple)
+
+    // Advanced Revenue Recognition
+    revenueMethod?: RevenueMethod;
+    totalEstimatedCosts?: number; // For Input Method
+    milestones?: Milestone[]; // For Output Method
+    hourlyRate?: number; // For T&M Projects
+
+    // Time-Phased Budgeting
+    phases?: ProjectPhase[];
+    monthlyBudget?: MonthlyBudget[];
+
+    // Billing Forecast (CFO Feature)
+    billingForecast?: BillingForecastItem[];
+
+    startDate?: string;
+    endDate?: string;
+    budgetLines: BudgetLine[];
+    isAdvance: boolean;
+}
+
+export interface ProjectPhase {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    budgetAllocation: number; // Amount allocated to this phase
+}
+
+export interface MonthlyBudget {
+    phaseId: string;
+    month: string; // YYYY-MM
+    amount: number;
+}
+
+export interface BillingForecastItem {
+    id: string;
+    date: string; // YYYY-MM-DD
+    amount: number;
+    isAdvance: boolean; // If true, it's an advance payment (Deferred Revenue)
+    notes?: string;
+}
+
+export interface Invoice {
+    id: string;
+    number: string;
+    date: string;
+    amount: number;
+    projectId: string;
+    status: 'Draft' | 'Sent' | 'Paid';
+    isAdvance: boolean;
+}
+
+export interface MonthlyStatement {
+    month: string; // YYYY-MM
+    projectId: string;
+    items: {
+        concept: string;
+        amount: number;
+        billId?: string;
+        notes?: string;
+    }[];
+}
