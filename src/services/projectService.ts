@@ -20,7 +20,9 @@ export const projectService = {
 
     async createInvoice(invoice: Invoice): Promise<void> {
         const ref = doc(collection(db, 'invoices'), invoice.id);
-        await setDoc(ref, invoice);
+        // Firestore does not accept undefined values. We use stringify/parse to remove them.
+        const sanitizedInvoice = JSON.parse(JSON.stringify(invoice));
+        await setDoc(ref, sanitizedInvoice);
     },
 
     async addWorkLog(projectId: string, workLog: WorkLog): Promise<void> {
