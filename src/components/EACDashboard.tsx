@@ -182,6 +182,12 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
                             <div className={`p-4 rounded-lg shadow-sm border ${variation >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className={`font-medium ${variation >= 0 ? 'text-green-800' : 'text-red-800'}`}>Desviación Proyectada</h3>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger><Info className={`h-4 w-4 ${variation >= 0 ? 'text-green-800/40' : 'text-red-800/40'}`} /></TooltipTrigger>
+                                            <TooltipContent><p>Diferencia entre Presupuesto y Estimación Final (BAC - EAC). Positivo es ahorro.</p></TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                                 <div className={`text-2xl font-bold ${variation >= 0 ? 'text-green-700' : 'text-red-700'}`}>
                                     {variation >= 0 ? '+' : ''}{variation.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
@@ -227,7 +233,15 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
                     <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Billed Amount */}
                         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                            <h3 className="font-medium text-primary-dark mb-1">Total Facturado</h3>
+                            <div className="flex justify-between items-start mb-1">
+                                <h3 className="font-medium text-primary-dark">Total Facturado</h3>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Monto total acumulado de las facturas emitidas al cliente.</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                             <div className="text-2xl font-bold text-primary-dark">
                                 {(project.billedAmount || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                             </div>
@@ -236,7 +250,15 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
 
                         {/* WIP (Asset) */}
                         <div className={`p-4 rounded-lg shadow-sm border ${Math.max(0, EV - (project.billedAmount || 0)) > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200 opacity-50'}`}>
-                            <h3 className="font-medium text-green-800 mb-1">WIP (Activo / A Facturar)</h3>
+                            <div className="flex justify-between items-start mb-1">
+                                <h3 className="font-medium text-green-800">WIP (Activo / A Facturar)</h3>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-green-800/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Trabajo realizado (ingreso reconocido) pendiente de facturar.</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                             <div className="text-2xl font-bold text-green-700">
                                 {Math.max(0, EV - (project.billedAmount || 0)).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                             </div>
@@ -245,7 +267,15 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
 
                         {/* Deferred Revenue (Liability) */}
                         <div className={`p-4 rounded-lg shadow-sm border ${Math.max(0, (project.billedAmount || 0) - EV) > 0 ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200 opacity-50'}`}>
-                            <h3 className="font-medium text-orange-800 mb-1">Ingresos Diferidos (Pasivo)</h3>
+                            <div className="flex justify-between items-start mb-1">
+                                <h3 className="font-medium text-orange-800">Ingresos Diferidos (Pasivo)</h3>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-orange-800/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Dinero facturado por adelantado que aún no se ha ganado con trabajo (Ingreso futuro).</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                             <div className="text-2xl font-bold text-orange-700">
                                 {Math.max(0, (project.billedAmount || 0) - EV).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                             </div>
