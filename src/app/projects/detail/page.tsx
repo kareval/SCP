@@ -434,13 +434,16 @@ function ProjectDetailsContent() {
                             </TooltipProvider>
                         </div>
                     </CardHeader>
-                    <CardContent className="flex flex-col items-center justify-center flex-grow pt-0 pb-4">
-                        {project.revenueMethod === 'Input' && revenue > 0 ? (
-                            <MarginGauge value={((revenue - totalIncurredCosts) / revenue) * 100} />
-                        ) : (
-                            <div className="text-xl md:text-2xl font-bold text-gray-400 py-6">N/A</div>
-                        )}
-                        <p className="text-xs text-primary-dark/60 -mt-2">
+                    <CardContent className="flex flex-col justify-center flex-grow">
+                        <div className={`text-xl md:text-2xl font-bold ${project.revenueMethod === 'Input' && revenue > 0
+                                ? (((revenue - totalIncurredCosts) / revenue) < 0.2 ? "text-red-700" : "text-green-700")
+                                : "text-gray-400"
+                            }`}>
+                            {project.revenueMethod === 'Input' && revenue > 0
+                                ? `${(((revenue - totalIncurredCosts) / revenue) * 100).toFixed(1)}%`
+                                : "N/A"}
+                        </div>
+                        <p className="text-xs text-primary-dark/60 mt-1">
                             {project.revenueMethod === 'Input' ? 'Rentabilidad' : 'No disp. en T&M'}
                         </p>
                     </CardContent>
