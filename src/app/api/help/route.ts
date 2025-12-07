@@ -5,7 +5,6 @@ const apiKey = process.env.GEMINI_API_KEY;
 
 export async function POST(req: Request) {
     if (!apiKey) {
-        console.error('API Key is missing in environment variables');
         return NextResponse.json({ error: 'API Key not configured' }, { status: 500 });
     }
 
@@ -52,5 +51,22 @@ INSTRUCCIONES DE RESPUESTA:
 - Si te preguntan por un término, defiine qué es, cómo se calcula y qué implica (ej. si es bueno o malo).
 - Si el usuario parece confundido entre términos (ej. EAC vs ETC), aclara la diferencia.
 - Actúa como un consultor senior amable y pedagógico.
+
+PREGUNTA DEL USUARIO:
+${message}
+`;
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+
+        const result = await model.generateContent(systemPrompt);
+        const response = result.response;
+        const text = response.text();
+
+        return NextResponse.json({ response: text });
+
+    } catch (error: any) {
+        console.error('Error generating AI response:', error);
+        return NextResponse.json({ error: 'Error processing request' }, { status: 500 });
     }
 }
