@@ -96,7 +96,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                 <div className="flex items-center space-x-4">
                     {!isEmbedded && (
                         <>
-                            <Link href="/financial-analysis" className="text-primary-dark/60 hover:text-primary-dark">
+                            <Link href="/projects" className="text-primary-dark/60 hover:text-primary-dark">
                                 <ArrowLeft className="h-6 w-6" />
                             </Link>
                             <div>
