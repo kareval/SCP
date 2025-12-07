@@ -20,9 +20,10 @@ import { Save } from "lucide-react";
 interface EACDashboardProps {
     initialProject: Project;
     initialLogs: WorkLog[];
+    isEmbedded?: boolean;
 }
 
-export default function EACDashboard({ initialProject, initialLogs }: EACDashboardProps) {
+export default function EACDashboard({ initialProject, initialLogs, isEmbedded = false }: EACDashboardProps) {
     const [project, setProject] = useState<Project>(initialProject);
     const [workLogs, setWorkLogs] = useState<WorkLog[]>(initialLogs);
     const [manualProgress, setManualProgress] = useState<number>(initialProject.lastEACSimulation?.progress || 0);
@@ -93,14 +94,15 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                    <Link href="/financial-analysis" className="text-primary-dark/60 hover:text-primary-dark">
-                        <ArrowLeft className="h-6 w-6" />
-                    </Link>
+                    {!isEmbedded && (
+                        <Link href="/financial-analysis" className="text-primary-dark/60 hover:text-primary-dark">
+                            <ArrowLeft className="h-6 w-6" />
+                        </Link>
+                    )}
                     <div>
-                        <h1 className="text-3xl font-bold text-primary-dark">Análisis EAC: {project.title}</h1>
+                        {!isEmbedded && <h1 className="text-3xl font-bold text-primary-dark">Análisis EAC: {project.title}</h1>}
                         <div className="flex items-center space-x-2 text-sm text-primary-dark/60">
-                            <span>{project.clientId}</span>
-                            <span>•</span>
+                            {!isEmbedded && <><span>{project.clientId}</span><span>•</span></>}
                             <Badge variant="outline">BAC: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</Badge>
                             {project.lastEACSimulation && (
                                 <>

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useRole } from '@/context/RoleContext';
 import { calculateProjectRevenue } from '@/utils/calculations';
+import EACDashboard from '@/components/EACDashboard';
 
 // Simple Gauge Component for Margin
 const MarginGauge = ({ value }: { value: number }) => {
@@ -91,7 +92,7 @@ function ProjectDetailsContent() {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [workLogs, setWorkLogs] = useState<WorkLog[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'activity' | 'billing' | 'details'>('activity');
+    const [activeTab, setActiveTab] = useState<'activity' | 'billing' | 'details' | 'eac'>('activity');
 
     // Form State for WorkLog
     const [logConcept, setLogConcept] = useState('');
@@ -436,8 +437,8 @@ function ProjectDetailsContent() {
                     </CardHeader>
                     <CardContent className="flex flex-col justify-center flex-grow">
                         <div className={`text-xl md:text-2xl font-bold ${project.revenueMethod === 'Input' && revenue > 0
-                                ? (((revenue - totalIncurredCosts) / revenue) < 0.2 ? "text-red-700" : "text-green-700")
-                                : "text-gray-400"
+                            ? (((revenue - totalIncurredCosts) / revenue) < 0.2 ? "text-red-700" : "text-green-700")
+                            : "text-gray-400"
                             }`}>
                             {project.revenueMethod === 'Input' && revenue > 0
                                 ? `${(((revenue - totalIncurredCosts) / revenue) * 100).toFixed(1)}%`
@@ -470,6 +471,15 @@ function ProjectDetailsContent() {
                             }`}
                     >
                         Facturación
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('eac')}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'eac'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-primary-dark/60 hover:text-primary-dark hover:border-aux-grey'
+                            }`}
+                    >
+                        Análisis EAC
                     </button>
                     <button
                         onClick={() => setActiveTab('details')}
@@ -873,6 +883,11 @@ function ProjectDetailsContent() {
                         </dl>
                     </CardContent>
                 </Card>
+            )}
+
+            {/* Tab Content: EAC */}
+            {activeTab === 'eac' && (
+                <EACDashboard initialProject={project} initialLogs={workLogs} isEmbedded={true} />
             )}
         </div>
     );

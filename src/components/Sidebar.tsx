@@ -13,7 +13,6 @@ const navigation = [
     { name: 'Proyectos', href: '/projects', icon: FolderKanban, roles: ['PM', 'CFO'] },
     { name: 'Control Center', href: '/control-center', icon: BarChart3, roles: ['PM', 'CFO'] },
     { name: 'Facturación', href: '/billing', icon: Receipt, roles: ['Billing', 'CFO'] },
-    { name: 'Análisis Financiero', href: '/financial-analysis', icon: TrendingUp, roles: ['CFO'] },
     { name: 'Configuración', href: '/settings', icon: Settings, roles: ['PM', 'Billing', 'CFO'] },
 ];
 
