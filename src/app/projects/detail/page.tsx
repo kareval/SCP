@@ -423,36 +423,7 @@ function ProjectDetailsContent() {
                     </CardContent>
                 </Card>
 
-                {/* Margin Card */}
-                <Card className={`${project.type !== 'TM'
-                    ? ((revenue - totalIncurredCosts) / revenue) < 0.2 ? "bg-red-50" : "bg-green-50"
-                    : "bg-gray-50"
-                    } flex flex-col h-full`}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
-                        <div className="flex items-center gap-2">
-                            <CardTitle className="text-sm font-medium text-primary-dark/60">Margen</CardTitle>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
-                                    <TooltipContent><p>(Revenue - Coste) / Revenue. Rentabilidad actual.</p></TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="flex flex-col justify-center flex-grow">
-                        <div className={`text-xl md:text-2xl font-bold ${project.type !== 'TM' && revenue > 0
-                            ? (((revenue - totalIncurredCosts) / revenue) < 0.2 ? "text-red-700" : "text-green-700")
-                            : "text-gray-400"
-                            }`}>
-                            {project.type !== 'TM' && revenue > 0
-                                ? `${(((revenue - totalIncurredCosts) / revenue) * 100).toFixed(1)}%`
-                                : "N/A"}
-                        </div>
-                        <p className="text-xs text-primary-dark/60 mt-1">
-                            {project.type !== 'TM' ? 'Rentabilidad' : 'No disp. en T&M'}
-                        </p>
-                    </CardContent>
-                </Card>
+
             </div>
 
             {/* Tabs */}
