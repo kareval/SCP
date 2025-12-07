@@ -15,7 +15,9 @@ export const en: LocaleKeys = {
         user: 'User',
         demoUser: 'Demo User',
         activeSession: 'Active Session',
-        saving: 'Saving...'
+        saving: 'Saving...',
+        select: 'Select...',
+        title: 'Title'
     },
     nav: {
         dashboard: 'Control Panel',
@@ -96,7 +98,11 @@ export const en: LocaleKeys = {
             },
             tcv: 'Total Value (TCV)',
             cac: 'Acquisition Cost (CAC)',
-            ratio: 'Efficiency Ratio'
+            ratio: 'Efficiency Ratio',
+            client: 'Client',
+            startDate: 'Start Date',
+            endDate: 'End Date',
+            status: 'Status'
         }
     },
     billing: {

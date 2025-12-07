@@ -13,7 +13,9 @@ export const es = {
         user: 'Usuario',
         demoUser: 'Usuario Demo',
         activeSession: 'Sesión Activa',
-        saving: 'Guardando...'
+        saving: 'Guardando...',
+        select: 'Seleccionar...',
+        title: 'Título'
     },
     nav: {
         dashboard: 'Panel de Control',
@@ -94,7 +96,11 @@ export const es = {
             },
             tcv: 'Valor Total (TCV)',
             cac: 'Coste de Adquisición (CAC)',
-            ratio: 'Ratio Eficiencia'
+            ratio: 'Ratio Eficiencia',
+            client: 'Cliente',
+            startDate: 'Fecha Inicio',
+            endDate: 'Fecha Fin',
+            status: 'Estado'
         }
     },
     billing: {
