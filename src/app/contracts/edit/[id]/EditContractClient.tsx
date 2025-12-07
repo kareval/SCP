@@ -5,8 +5,14 @@ import { useRouter } from 'next/navigation';
 import { contractService } from '@/services/contractService';
 import { Contract } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Info, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function EditContractClient({ id }: { id: string }) {
     const router = useRouter();
@@ -17,6 +23,7 @@ export default function EditContractClient({ id }: { id: string }) {
         code: '',
         clientId: '',
         tcv: 0,
+        acquisitionCost: 0,
         startDate: '',
         endDate: '',
         status: 'Active' as 'Active' | 'Closed'
@@ -34,6 +41,7 @@ export default function EditContractClient({ id }: { id: string }) {
                         code: found.code || '',
                         clientId: found.clientId,
                         tcv: found.tcv,
+                        acquisitionCost: found.acquisitionCost || 0,
                         startDate: found.startDate,
                         endDate: found.endDate,
                         status: found.status
@@ -63,6 +71,7 @@ export default function EditContractClient({ id }: { id: string }) {
                 code: formData.code || undefined,
                 clientId: formData.clientId,
                 tcv: Number(formData.tcv),
+                acquisitionCost: Number(formData.acquisitionCost),
                 startDate: formData.startDate,
                 endDate: formData.endDate,
                 status: formData.status
@@ -142,6 +151,27 @@ export default function EditContractClient({ id }: { id: string }) {
                             />
                         </div>
 
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <label className="block text-sm font-medium text-primary-dark">Coste de Adquisición (CAC) €</label>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Inversión comercial necesaria para ganar este contrato.</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                            <input
+                                type="number"
+                                value={formData.acquisitionCost}
+                                onChange={(e) => setFormData({ ...formData, acquisitionCost: Number(e.target.value) })}
+                                className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
+                            />
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-primary-dark">Fecha Inicio</label>
@@ -189,6 +219,35 @@ export default function EditContractClient({ id }: { id: string }) {
                     </form>
                 </CardContent>
             </Card>
-        </div>
+
+
+            <Card className="max-w-2xl bg-blue-50/50 border-blue-100">
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <HelpCircle className="h-5 w-5 text-tertiary-blue" />
+                        <CardTitle className="text-tertiary-blue text-lg">Guía de Conceptos: Eficiencia Comercial</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm text-primary-dark/80">
+                    <div>
+                        <p className="font-bold text-primary-dark">LTV (Lifetime Value) ≈ TCV</p>
+                        <p>Valor total que el cliente aporta durante la vida del contrato. En este contexto, usamos el <strong>Valor Total del Contrato (TCV)</strong> como proxy.</p>
+                    </div>
+                    <div>
+                        <p className="font-bold text-primary-dark">CAC (Customer Acquisition Cost)</p>
+                        <p>Total gastado en ventas y marketing para conseguir este cliente/contrato específico.</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-md border border-blue-100">
+                        <p className="font-bold text-primary-dark mb-1">Ratio de Eficiencia (LTV:CAC)</p>
+                        <p className="mb-2">Mide cuántas veces recuperas la inversión de captación.</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                            <li><span className="text-green-600 font-bold">Ratio {'>'} 3:</span> Saludable. El cliente genera 3€ por cada 1€ invertido.</li>
+                            <li><span className="text-orange-600 font-bold">Ratio 1-3:</span> Margen bajo. Vigilar costes.</li>
+                            <li><span className="text-red-600 font-bold">Ratio {'<'} 1:</span> Pérdidas. Cuesta más captar al cliente que lo que paga.</li>
+                        </ul>
+                    </div>
+                </CardContent>
+            </Card>
+        </div >
     );
 }
