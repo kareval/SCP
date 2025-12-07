@@ -5,8 +5,14 @@ import { useRouter } from 'next/navigation';
 import { contractService } from '@/services/contractService';
 import { Contract } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import Link from 'next/link';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function NewContractPage() {
     const router = useRouter();
@@ -16,6 +22,7 @@ export default function NewContractPage() {
         code: '',
         clientId: '',
         tcv: 0,
+        acquisitionCost: 0,
         startDate: '',
         endDate: '',
     });
@@ -31,6 +38,7 @@ export default function NewContractPage() {
                 code: formData.code || undefined,
                 clientId: formData.clientId,
                 tcv: Number(formData.tcv),
+                acquisitionCost: formData.acquisitionCost ? Number(formData.acquisitionCost) : undefined,
                 startDate: formData.startDate,
                 endDate: formData.endDate,
                 status: 'Active'
@@ -105,6 +113,27 @@ export default function NewContractPage() {
                                 min="0"
                                 step="0.01"
                                 required
+                            />
+                        </div>
+
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <label className="block text-sm font-medium text-primary-dark">Coste de Adquisición (CAC) €</label>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Inversión comercial y de marketing para ganar este contrato.</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                            <input
+                                type="number"
+                                value={formData.acquisitionCost}
+                                onChange={(e) => setFormData({ ...formData, acquisitionCost: Number(e.target.value) })}
+                                className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
                             />
                         </div>
 

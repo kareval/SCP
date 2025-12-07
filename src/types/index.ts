@@ -42,6 +42,7 @@ export interface Contract {
     title: string;
     clientId: string;
     tcv: number; // Total Contract Value
+    acquisitionCost?: number; // Coste de Adquisición (CAC)
     startDate: string;
     endDate: string;
     status: 'Active' | 'Closed';
@@ -58,6 +59,10 @@ export interface Project {
     justifiedAmount: number; // Revenue Recognized
     billedAmount: number;
     completionPercentage?: number; // For Fixed Price (Legacy/Simple)
+
+    // Strategic Metrics
+    strategicScore?: number; // 0-100 Valor Estratégico
+    expectedROI?: number; // Return on Investment Estimado (%)
 
     // Advanced Revenue Recognition
     revenueMethod?: RevenueMethod;

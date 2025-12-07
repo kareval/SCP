@@ -903,6 +903,45 @@ function ProjectDetailsContent() {
                                 </div>
                             )}
 
+                            {/* Strategic Details Section */}
+                            {(project.strategicScore !== undefined || project.expectedROI !== undefined) && (
+                                <div className="md:col-span-2 mt-4 pt-4 border-t border-aux-grey/30">
+                                    <h4 className="text-base font-semibold text-primary-dark mb-2">Información Estratégica</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {project.strategicScore !== undefined && (
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <dt className="text-sm font-medium text-primary-dark/60">Puntuación Estratégica</dt>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
+                                                            <TooltipContent><p>Importancia estratégica cualitativa (0-100).</p></TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
+                                                <dd className="mt-1 text-sm font-bold text-primary-dark">{project.strategicScore} / 100</dd>
+                                            </div>
+                                        )}
+                                        {project.expectedROI !== undefined && (
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <dt className="text-sm font-medium text-primary-dark/60">ROI Esperado</dt>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
+                                                            <TooltipContent><p>Retorno de Inversión estimado.</p></TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
+                                                <dd className={`mt-1 text-sm font-bold ${project.expectedROI >= 20 ? 'text-green-600' : 'text-primary-dark'}`}>
+                                                    {project.expectedROI}%
+                                                </dd>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="md:col-span-2 mt-4 pt-4 border-t border-aux-grey/30">
                                 <h4 className="text-base font-semibold text-primary-dark mb-2">Implicación Financiera</h4>
                                 <div className={`p-4 rounded-md border text-sm ${project.type === 'TM'

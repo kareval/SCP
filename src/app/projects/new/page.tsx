@@ -9,6 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Plus, Trash2, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from 'next/link';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function NewProjectPage() {
     const router = useRouter();
@@ -26,7 +32,9 @@ export default function NewProjectPage() {
         hourlyRate: 0,
         linearMonthlyAmount: 0,
         startDate: '',
-        endDate: ''
+        endDate: '',
+        strategicScore: 0,
+        expectedROI: 0
     });
 
     const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -110,7 +118,9 @@ export default function NewProjectPage() {
                 linearMonthlyAmount: (formData.type === 'Fixed' && formData.revenueMethod === 'Linear') ? Number(formData.linearMonthlyAmount) : undefined,
                 startDate: formData.startDate || undefined,
                 endDate: formData.endDate || undefined,
-                hourlyRate: formData.type === 'TM' ? Number(formData.hourlyRate) : undefined
+                hourlyRate: formData.type === 'TM' ? Number(formData.hourlyRate) : undefined,
+                strategicScore: Number(formData.strategicScore) || undefined,
+                expectedROI: Number(formData.expectedROI) || undefined
             };
 
             // Sanitize undefined values for Firestore
@@ -254,6 +264,50 @@ export default function NewProjectPage() {
                                     value={formData.endDate}
                                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                                     className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Strategic Information */}
+                        <div className="grid grid-cols-2 gap-4 border-t border-aux-grey pt-4 mt-2">
+                            <div className="col-span-2 mb-2">
+                                <h3 className="text-lg font-medium text-primary-dark">Valoración Estratégica</h3>
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <label className="block text-sm font-medium text-primary-dark">Puntuación Estratégica (0-100)</label>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                            <TooltipContent><p>Valor cualitativo (0-100) sobre la importancia estratégica para la compañía.</p></TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                                <input
+                                    type="number"
+                                    value={formData.strategicScore}
+                                    onChange={(e) => setFormData({ ...formData, strategicScore: Number(e.target.value) })}
+                                    className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                    min="0"
+                                    max="100"
+                                />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <label className="block text-sm font-medium text-primary-dark">ROI Esperado (%)</label>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                            <TooltipContent><p>Retorno de Inversión estimado. % de beneficio sobre el coste.</p></TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                                <input
+                                    type="number"
+                                    value={formData.expectedROI}
+                                    onChange={(e) => setFormData({ ...formData, expectedROI: Number(e.target.value) })}
+                                    className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                    step="0.1"
                                 />
                             </div>
                         </div>
