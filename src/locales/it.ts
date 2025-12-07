@@ -28,7 +28,7 @@ export const it = {
         financialTab: 'Visione Finanziaria',
         strategicTab: 'Visione Strategica',
         billingTrend: 'Trend di Fatturazione (6 mesi)',
-        efficiency: 'Efficienza Operativa (Giustificato vs Budget)',
+        efficiency: 'Efficienza Operativa (Giustificato vs. Budget)',
         clientConcentration: 'Concentrazione Clienti (TCV)',
         strategicRadar: 'Radar Punteggio Strategico',
         kpi: {
@@ -46,7 +46,7 @@ export const it = {
         newProject: 'Nuovo Progetto',
         tabs: {
             strategic: 'Portafoglio Strategico',
-            execution: 'Controllo Esecuzione',
+            execution: 'Controllo dell\'Esecuzione',
             operational: 'Gestione Operativa'
         },
         card: {
