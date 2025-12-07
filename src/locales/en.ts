@@ -20,7 +20,7 @@ export const en: LocaleKeys = {
         title: 'Title'
     },
     nav: {
-        dashboard: 'Control Panel',
+        dashboard: 'Dashboard',
         projects: 'Projects',
         contracts: 'Contracts',
         billing: 'Billing',
@@ -37,7 +37,7 @@ export const en: LocaleKeys = {
             budgetActive: 'Active Budget',
             justified: 'Justified',
             billed: 'Billed',
-            wip: 'WIP (Risk)',
+            wip: 'WIP (Pending)',
             tcv: 'Total Contract Value',
             backlog: 'Global Backlog',
             revenueYear: 'Annual Revenue'
