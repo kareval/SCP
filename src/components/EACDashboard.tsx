@@ -78,7 +78,15 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
     const EAC = CPI > 0 ? BAC / CPI : BAC;
 
     // Variation
+    // Variation
     const variation = BAC - EAC;
+
+    // 5. Calculate TCPI (To Complete Performance Index)
+    // Work Remaining (BAC - EV) / Funds Remaining (BAC - AC)
+    // How efficient we need to be to finish on budget.
+    const workRemaining = Math.max(0, BAC - EV);
+    const fundsRemaining = BAC - AC;
+    const TCPI = fundsRemaining > 0 ? workRemaining / fundsRemaining : (workRemaining > 0 ? 999 : 0); // 999 indicates impossible/infinite
 
     return (
         <div className="space-y-8">
@@ -160,11 +168,11 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
                         <div>
 
                             <div className="flex justify-between items-center mb-1">
-                                <label className="text-sm font-medium text-primary-dark">Coste Real Actual (AC / COGS)</label>
+                                <label className="text-sm font-medium text-primary-dark">Coste Real Actual (AC)</label>
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                        <TooltipContent><p>Actual Cost / Cost of Goods Sold. Coste real incurrido hasta la fecha (Horas + Gastos).</p></TooltipContent>
+                                        <TooltipContent><p>Actual Cost. Coste real incurrido hasta la fecha.</p></TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
@@ -248,6 +256,25 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
                                 </div>
                                 <p className={`text-xs mt-2 ${CPI >= 1 ? 'text-green-800/70' : 'text-red-800/70'}`}>
                                     Por cada euro gastado, generas <strong>{CPI.toFixed(2)}€</strong> de valor.
+                                </p>
+                            </div>
+
+                            {/* TCPI Card */}
+                            <div className={`p-4 rounded-lg shadow-sm border ${TCPI <= 1 ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className={`font-medium ${TCPI <= 1 ? 'text-green-800' : 'text-orange-800'}`}>Rendimiento Requerido (TCPI)</h3>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger><Info className={`h-4 w-4 ${TCPI <= 1 ? 'text-green-800/40' : 'text-orange-800/40'}`} /></TooltipTrigger>
+                                            <TooltipContent><p>(BAC - EV) / (BAC - AC). Eficiencia necesaria en el trabajo restante para cumplir el presupuesto.</p></TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                                <div className="text-3xl font-bold text-primary-dark">{TCPI > 100 ? '>100' : TCPI.toFixed(2)}</div>
+                                <p className={`text-xs mt-2 ${TCPI <= 1 ? 'text-green-800/70' : 'text-orange-800/70'}`}>
+                                    {TCPI <= 1
+                                        ? 'Es factible terminar en presupuesto.'
+                                        : 'Se requiere una eficiencia mucho mayor para recuperar el presupuesto.'}
                                 </p>
                             </div>
                         </div>
