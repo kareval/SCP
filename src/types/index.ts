@@ -32,6 +32,8 @@ export interface Milestone {
     name: string;
     percentage: number;
     completed: boolean;
+    targetDate?: string; // Fecha estimada de consecución
+    actualDate?: string; // Fecha real de cumplimiento
 }
 
 export interface Contract {

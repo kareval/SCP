@@ -230,7 +230,11 @@ function ProjectDetailsContent() {
         if (!project || !project.milestones) return;
 
         const updatedMilestones = project.milestones.map(m =>
-            m.id === milestone.id ? { ...m, completed: !m.completed } : m
+            m.id === milestone.id ? {
+                ...m,
+                completed: !m.completed,
+                actualDate: !m.completed ? new Date().toISOString() : undefined // Set or clear actual date
+            } : m
         );
 
         // Calculate new Revenue based on completed milestones
@@ -526,7 +530,15 @@ function ProjectDetailsContent() {
                                                             <p className={`font-medium ${milestone.completed ? 'text-secondary-teal' : 'text-primary-dark'}`}>
                                                                 {milestone.name}
                                                             </p>
-                                                            <p className="text-xs text-primary-dark/60">{milestone.percentage}% del Presupuesto</p>
+                                                            <div className="flex flex-col">
+                                                                <p className="text-xs text-primary-dark/60">{milestone.percentage}% del Presupuesto</p>
+                                                                {milestone.targetDate && !milestone.completed && (
+                                                                    <p className="text-xs text-primary-dark/50">Previsto: {new Date(milestone.targetDate).toLocaleDateString()}</p>
+                                                                )}
+                                                                {milestone.actualDate && milestone.completed && (
+                                                                    <p className="text-xs text-secondary-teal/80">Completado: {new Date(milestone.actualDate).toLocaleDateString()}</p>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>

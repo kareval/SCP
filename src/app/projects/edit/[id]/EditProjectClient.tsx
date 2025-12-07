@@ -39,6 +39,7 @@ export default function EditProjectClient({ id }: { id: string }) {
     const [milestones, setMilestones] = useState<Milestone[]>([]);
     const [newMilestoneName, setNewMilestoneName] = useState('');
     const [newMilestonePercentage, setNewMilestonePercentage] = useState('');
+    const [newMilestoneDate, setNewMilestoneDate] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -92,12 +93,14 @@ export default function EditProjectClient({ id }: { id: string }) {
             id: crypto.randomUUID(),
             name: newMilestoneName,
             percentage: percentage,
-            completed: false
+            completed: false,
+            targetDate: newMilestoneDate || undefined
         };
 
         setMilestones([...milestones, newMilestone]);
         setNewMilestoneName('');
         setNewMilestonePercentage('');
+        setNewMilestoneDate('');
     };
 
     const handleRemoveMilestone = (id: string) => {
@@ -414,6 +417,12 @@ export default function EditProjectClient({ id }: { id: string }) {
                                                         className="flex-1 rounded-md border border-aux-grey px-3 py-1 text-sm focus:border-primary focus:ring-primary focus:outline-none"
                                                     />
                                                     <input
+                                                        type="date"
+                                                        value={newMilestoneDate}
+                                                        onChange={(e) => setNewMilestoneDate(e.target.value)}
+                                                        className="w-32 rounded-md border border-aux-grey px-2 py-1 text-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                                    />
+                                                    <input
                                                         type="number"
                                                         placeholder="%"
                                                         value={newMilestonePercentage}
@@ -434,7 +443,10 @@ export default function EditProjectClient({ id }: { id: string }) {
                                                 <div className="space-y-2 mt-2">
                                                     {milestones.map((m) => (
                                                         <div key={m.id} className="flex justify-between items-center bg-white p-2 rounded border border-aux-grey/50 text-sm">
-                                                            <span className="text-primary-dark">{m.name}</span>
+                                                            <span className="text-primary-dark">
+                                                                {m.name}
+                                                                {m.targetDate && <span className="text-xs text-primary-dark/60 ml-2">({new Date(m.targetDate).toLocaleDateString()})</span>}
+                                                            </span>
                                                             <div className="flex items-center gap-2">
                                                                 <span className="font-bold text-primary">{m.percentage}%</span>
                                                                 <button type="button" onClick={() => handleRemoveMilestone(m.id)} className="text-aux-red hover:text-red-700">
