@@ -339,8 +339,8 @@ export default function Dashboard() {
 
         {/* --- FINANCIAL TAB --- */}
         <TabsContent value="financial" className="space-y-6">
-          {/* Row 1: KPI Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          {/* Row 1: Financial KPI Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.kpi.budgetActive')}</CardTitle>
@@ -381,6 +381,10 @@ export default function Dashboard() {
                 <p className="text-xs text-primary-dark/60 text-right">{Math.max(0, -wipAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} (Anticipos)</p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Row 2: Strategic KPI Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card className="bg-primary text-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-white/80">{t('dashboard.kpi.tcv')}</CardTitle>
@@ -410,7 +414,7 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Row 2: Charts */}
+          {/* Row 3: Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Billing Trend */}
             <Card>
