@@ -312,8 +312,8 @@ function ProjectDetailsContent() {
 
             {/* Financial Health Cards */}
             <div className={`grid grid-cols-1 md:grid-cols-3 ${(deferred > 0 && wip > 0) ? 'xl:grid-cols-6' :
-                    (deferred > 0 || wip > 0) ? 'xl:grid-cols-5' :
-                        'xl:grid-cols-4'
+                (deferred > 0 || wip > 0) ? 'xl:grid-cols-5' :
+                    'xl:grid-cols-4'
                 } gap-4`}>
                 <Card className="flex flex-col h-full">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -696,29 +696,7 @@ function ProjectDetailsContent() {
 
                     {/* Log List */}
                     <div className="lg:col-span-2">
-                        {/* Utilization & Leakage Summary */}
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                            <Card className="bg-blue-50 border-blue-100">
-                                <CardContent className="p-4 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-xs font-medium text-blue-800">Tasa de Utilización</p>
-                                        <p className="text-lg font-bold text-blue-700">100%</p>
-                                    </div>
-                                    <CheckCircle className="h-5 w-5 text-blue-500" />
-                                </CardContent>
-                            </Card>
-                            {project.type === 'TM' && (
-                                <Card className="bg-orange-50 border-orange-100">
-                                    <CardContent className="p-4 flex items-center justify-between">
-                                        <div>
-                                            <p className="text-xs font-medium text-orange-800">Revenue Leakage</p>
-                                            <p className="text-lg font-bold text-orange-700">0 €</p>
-                                        </div>
-                                        <AlertTriangle className="h-5 w-5 text-orange-500" />
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </div>
+
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
