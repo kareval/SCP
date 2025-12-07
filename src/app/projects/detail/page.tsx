@@ -483,37 +483,93 @@ function ProjectDetailsContent() {
                                 <CardContent>
                                     {project.revenueMethod === 'Output' ? (
                                         <div className="space-y-3">
-                                            {project.milestones?.map((milestone) => (
-                                                <div
-                                                    key={milestone.id}
-                                                    className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors ${milestone.completed
-                                                        ? 'bg-secondary-teal/10 border-secondary-teal/30'
-                                                        : 'bg-white border-aux-grey hover:bg-aux-grey/10'
-                                                        }`}
-                                                    onClick={() => handleToggleMilestone(milestone)}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        {milestone.completed
-                                                            ? <CheckSquare className="h-5 w-5 text-secondary-teal" />
-                                                            : <Square className="h-5 w-5 text-primary-dark/40" />
+                                            {project.milestones?.map((milestone) => {
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
+
+                                                let delayNode = null;
+                                                let isLate = false;
+
+                                                if (milestone.targetDate) {
+                                                    const target = new Date(milestone.targetDate);
+                                                    target.setHours(0, 0, 0, 0);
+
+                                                    if (!milestone.completed) {
+                                                        // Active Delay
+                                                        if (target < today) {
+                                                            const diffTime = Math.abs(today.getTime() - target.getTime());
+                                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                            isLate = true;
+                                                            delayNode = (
+                                                                <span className="text-red-600 font-bold ml-1">
+                                                                    (Retraso: {diffDays} días)
+                                                                </span>
+                                                            );
                                                         }
-                                                        <div>
-                                                            <p className={`font-medium ${milestone.completed ? 'text-secondary-teal' : 'text-primary-dark'}`}>
-                                                                {milestone.name}
-                                                            </p>
-                                                            <div className="flex flex-col">
-                                                                <p className="text-xs text-primary-dark/60">{milestone.percentage}% del Presupuesto</p>
-                                                                {milestone.targetDate && !milestone.completed && (
-                                                                    <p className="text-xs text-primary-dark/50">Previsto: {new Date(milestone.targetDate).toLocaleDateString()}</p>
-                                                                )}
-                                                                {milestone.actualDate && milestone.completed && (
-                                                                    <p className="text-xs text-secondary-teal/80">Completado: {new Date(milestone.actualDate).toLocaleDateString()}</p>
-                                                                )}
+                                                    } else if (milestone.actualDate) {
+                                                        // Historical Delay
+                                                        const actual = new Date(milestone.actualDate);
+                                                        actual.setHours(0, 0, 0, 0);
+
+                                                        if (actual > target) {
+                                                            const diffTime = Math.abs(actual.getTime() - target.getTime());
+                                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                            delayNode = (
+                                                                <span className="text-orange-600 ml-1">
+                                                                    (+{diffDays} días)
+                                                                </span>
+                                                            );
+                                                        } else {
+                                                            delayNode = (
+                                                                <span className="text-green-600 ml-1 text-[10px]">
+                                                                    (En fecha)
+                                                                </span>
+                                                            );
+                                                        }
+                                                    }
+                                                }
+
+                                                return (
+                                                    <div
+                                                        key={milestone.id}
+                                                        className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors ${milestone.completed
+                                                            ? 'bg-secondary-teal/10 border-secondary-teal/30'
+                                                            : isLate
+                                                                ? 'bg-red-50 border-red-200 hover:bg-red-100'
+                                                                : 'bg-white border-aux-grey hover:bg-aux-grey/10'
+                                                            }`}
+                                                        onClick={() => handleToggleMilestone(milestone)}
+                                                    >
+                                                        <div className="flex items-center gap-3 w-full">
+                                                            {milestone.completed
+                                                                ? <CheckSquare className="h-5 w-5 text-secondary-teal shrink-0" />
+                                                                : <Square className={`h-5 w-5 shrink-0 ${isLate ? 'text-red-400' : 'text-primary-dark/40'}`} />
+                                                            }
+                                                            <div className="flex flex-col w-full">
+                                                                <div className="flex justify-between items-center w-full">
+                                                                    <p className={`font-medium ${milestone.completed ? 'text-secondary-teal' : isLate ? 'text-red-700' : 'text-primary-dark'}`}>
+                                                                        {milestone.name}
+                                                                    </p>
+                                                                    <p className="text-xs text-primary-dark/60 whitespace-nowrap">{milestone.percentage}%</p>
+                                                                </div>
+
+                                                                <div className="flex flex-col gap-0.5 mt-1">
+                                                                    {milestone.targetDate && !milestone.completed && (
+                                                                        <p className={`text-xs ${isLate ? 'text-red-600 font-medium' : 'text-primary-dark/50'}`}>
+                                                                            Previsto: {new Date(milestone.targetDate).toLocaleDateString()} {delayNode}
+                                                                        </p>
+                                                                    )}
+                                                                    {milestone.actualDate && milestone.completed && (
+                                                                        <p className="text-xs text-secondary-teal/80">
+                                                                            Completado: {new Date(milestone.actualDate).toLocaleDateString()} {delayNode}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                             {(!project.milestones || project.milestones.length === 0) && (
                                                 <p className="text-sm text-primary-dark/60 italic">No hay hitos definidos.</p>
                                             )}
