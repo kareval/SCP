@@ -14,12 +14,15 @@ import {
     Label
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useTranslation } from '@/context/LanguageContext';
 
 interface PortfolioMatrixProps {
     projects: Project[];
 }
 
 export default function PortfolioMatrix({ projects }: PortfolioMatrixProps) {
+    const { t } = useTranslation();
+
     // Filter projects that have relevant data
     const data = projects
         .filter(p => p.status !== 'Closed' && p.status !== 'Draft' && p.type !== undefined)
@@ -42,9 +45,9 @@ export default function PortfolioMatrix({ projects }: PortfolioMatrixProps) {
             return (
                 <div className="bg-white p-3 border border-aux-grey rounded shadow-lg text-sm">
                     <p className="font-bold text-primary-dark mb-1">{data.name}</p>
-                    <p className="text-secondary-teal">Score Estratégico: {data.score}</p>
-                    <p className="text-primary-dark/80">Presupuesto: {data.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
-                    {data.roi > 0 && <p className="text-tertiary-blue">ROI Esperado: {data.roi}%</p>}
+                    <p className="text-secondary-teal">{t('projects.form.strategicScore')}: {data.score}</p>
+                    <p className="text-primary-dark/80">{t('projects.form.budget')}: {data.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
+                    {data.roi > 0 && <p className="text-tertiary-blue">{t('projects.form.roi')}: {data.roi}%</p>}
                 </div>
             );
         }
@@ -54,11 +57,9 @@ export default function PortfolioMatrix({ projects }: PortfolioMatrixProps) {
     return (
         <Card className="mb-8">
             <CardHeader>
-                <CardTitle className="text-primary-dark">Matriz de Priorización de Cartera</CardTitle>
+                <CardTitle className="text-primary-dark">{t('projects.portfolioMatrix.title')}</CardTitle>
                 <CardDescription>
-                    Visualización de Valor (Eje Y) vs. Esfuerzo/Coste (Eje X).
-                    <br />
-                    El tamaño de la burbuja representa el volumen del proyecto (Revenue).
+                    {t('projects.portfolioMatrix.description')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -76,10 +77,10 @@ export default function PortfolioMatrix({ projects }: PortfolioMatrixProps) {
                             <XAxis
                                 type="number"
                                 dataKey="budget"
-                                name="Presupuesto"
+                                name={t('projects.form.budget')}
                                 unit="€"
                                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                                label={{ value: 'Coste / Esfuerzo (Presupuesto)', position: 'insideBottom', offset: -10 }}
+                                label={{ value: t('projects.portfolioMatrix.xAxis'), position: 'insideBottom', offset: -10 }}
                             />
                             <YAxis
                                 type="number"
@@ -87,17 +88,17 @@ export default function PortfolioMatrix({ projects }: PortfolioMatrixProps) {
                                 name="Score"
                                 unit=""
                                 domain={[0, 100]}
-                                label={{ value: 'Valor Estratégico (0-100)', angle: -90, position: 'insideLeft' }}
+                                label={{ value: t('projects.portfolioMatrix.yAxis'), angle: -90, position: 'insideLeft' }}
                             />
                             <ZAxis type="number" dataKey="revenue" range={[60, 400]} name="Revenue" />
                             <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
 
                             {/* Quadrant Lines (approximate middle) */}
                             <ReferenceLine y={50} stroke="#cbd5e1" strokeDasharray="3 3">
-                                <Label value="Alta Estrategia" position="insideTopLeft" className="fill-slate-400 text-xs" />
+                                <Label value={t('projects.portfolioMatrix.highStrategy')} position="insideTopLeft" className="fill-slate-400 text-xs" />
                             </ReferenceLine>
 
-                            <Scatter name="Proyectos" data={data} fill="#2A9D8F" fillOpacity={0.6} stroke="#264653" />
+                            <Scatter name={t('projects.title')} data={data} fill="#2A9D8F" fillOpacity={0.6} stroke="#264653" />
                         </ScatterChart>
                     </ResponsiveContainer>
                 </div>

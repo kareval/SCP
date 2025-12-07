@@ -6,7 +6,7 @@ import { projectService } from '@/services/projectService';
 import { contractService } from '@/services/contractService';
 import { Project, ProjectType, RevenueMethod, Milestone, Contract } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,9 +14,17 @@ import { BudgetPlanner } from "@/components/BudgetPlanner";
 import { BillingPlanner } from "@/components/BillingPlanner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { useTranslation } from '@/context/LanguageContext';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function EditProjectClient({ id }: { id: string }) {
     const router = useRouter();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [project, setProject] = useState<Project | null>(null);
@@ -33,13 +41,28 @@ export default function EditProjectClient({ id }: { id: string }) {
         startDate: '',
         endDate: '',
         hourlyRate: 0,
-        linearMonthlyAmount: 0
+        linearMonthlyAmount: 0,
+        strategicScore: 0,
+        expectedROI: 0,
+        strategicBreakdown: {
+            alignment: 0,
+            innovation: 0,
+            customerImpact: 0,
+            viability: 0
+        }
     });
 
     const [milestones, setMilestones] = useState<Milestone[]>([]);
     const [newMilestoneName, setNewMilestoneName] = useState('');
     const [newMilestonePercentage, setNewMilestonePercentage] = useState('');
     const [newMilestoneDate, setNewMilestoneDate] = useState('');
+
+    // Auto-calculate Total Strategic Score
+    useEffect(() => {
+        const { alignment, innovation, customerImpact, viability } = formData.strategicBreakdown;
+        const total = alignment + innovation + customerImpact + viability;
+        setFormData(prev => ({ ...prev, strategicScore: total }));
+    }, [formData.strategicBreakdown]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -66,7 +89,15 @@ export default function EditProjectClient({ id }: { id: string }) {
                         startDate: found.startDate || '',
                         endDate: found.endDate || '',
                         hourlyRate: found.hourlyRate || 0,
-                        linearMonthlyAmount: found.linearMonthlyAmount || 0
+                        linearMonthlyAmount: found.linearMonthlyAmount || 0,
+                        strategicScore: found.strategicScore || 0,
+                        expectedROI: found.expectedROI || 0,
+                        strategicBreakdown: found.strategicBreakdown || {
+                            alignment: 0,
+                            innovation: 0,
+                            customerImpact: 0,
+                            viability: 0
+                        }
                     });
                     if (found.milestones) {
                         setMilestones(found.milestones);
@@ -115,12 +146,7 @@ export default function EditProjectClient({ id }: { id: string }) {
             const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
 
             if (months > 0) {
-                // If the stored amount is 0 or user just switched method, auto-cal.
-                // We might want to allow override. But "precalcula" suggests we set it.
-                // We can check if it matches the calc, otherwise update.
                 const amount = formData.budget / months;
-                // Only update if significantly different to avoid loops or overwriting manual edits? 
-                // User requirement was "precalcula". I will overwrite on change of budget/dates.
                 setFormData(prev => ({ ...prev, linearMonthlyAmount: Number(amount.toFixed(2)) }));
             }
         }
@@ -146,14 +172,16 @@ export default function EditProjectClient({ id }: { id: string }) {
                 startDate: formData.startDate,
                 endDate: formData.endDate,
                 hourlyRate: formData.type === 'TM' ? Number(formData.hourlyRate) : undefined,
-                linearMonthlyAmount: (formData.type === 'Fixed' && formData.revenueMethod === 'Linear') ? Number(formData.linearMonthlyAmount) : undefined
+                linearMonthlyAmount: (formData.type === 'Fixed' && formData.revenueMethod === 'Linear') ? Number(formData.linearMonthlyAmount) : undefined,
+                strategicScore: Number(formData.strategicScore) || undefined,
+                expectedROI: Number(formData.expectedROI) || undefined,
+                strategicBreakdown: formData.strategicBreakdown
             };
 
             const projectToSave = JSON.parse(JSON.stringify(updatedProject));
             await projectService.updateProject(projectToSave);
-            // Don't redirect immediately to allow editing other tabs if needed, or show success message
             alert('Proyecto actualizado correctamente');
-            setProject(updatedProject); // Update local state
+            setProject(updatedProject);
         } catch (error) {
             console.error('Error updating project:', error);
             alert('Error al actualizar el proyecto');
@@ -175,7 +203,7 @@ export default function EditProjectClient({ id }: { id: string }) {
         setProject(updatedProject);
     };
 
-    if (loading) return <div className="p-8">Cargando proyecto...</div>;
+    if (loading) return <div className="p-8">{t('common.loading')}...</div>;
     if (!project) return <div className="p-8">Proyecto no encontrado</div>;
 
     return (
@@ -187,27 +215,29 @@ export default function EditProjectClient({ id }: { id: string }) {
                 <h1 className="text-3xl font-bold text-primary-dark">Editar Proyecto</h1>
             </div>
 
-            <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-                    <TabsTrigger value="general">General</TabsTrigger>
+            <Tabs defaultValue="operational" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
+                    <TabsTrigger value="operational">{t('projects.tabs.operational')}</TabsTrigger>
+                    <TabsTrigger value="strategic">{t('projects.tabs.strategic')}</TabsTrigger>
                     <TabsTrigger value="planning">Planificación</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="general">
-                    <Card className="max-w-2xl">
+                {/* TAB: Operational */}
+                <TabsContent value="operational">
+                    <Card className="max-w-4xl">
                         <CardHeader>
-                            <CardTitle className="text-primary-dark">Detalles del Proyecto</CardTitle>
+                            <CardTitle className="text-primary-dark">{t('projects.title')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-primary-dark">Contrato Marco (Opcional)</label>
+                                    <label className="block text-sm font-medium text-primary-dark">{t('contracts.title')} (Opcional)</label>
                                     <select
                                         value={formData.contractId}
                                         onChange={(e) => handleContractChange(e.target.value)}
                                         className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
                                     >
-                                        <option value="">-- Seleccionar Contrato --</option>
+                                        <option value="">{t('common.select')}</option>
                                         {contracts.map(c => (
                                             <option key={c.id} value={c.id}>{c.title} ({c.clientId})</option>
                                         ))}
@@ -215,7 +245,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-primary-dark">Título del Proyecto</label>
+                                    <label className="block text-sm font-medium text-primary-dark">{t('common.title')}</label>
                                     <input
                                         type="text"
                                         value={formData.title}
@@ -226,7 +256,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-primary-dark">Cliente</label>
+                                    <label className="block text-sm font-medium text-primary-dark">{t('contracts.form.client')}</label>
                                     <input
                                         type="text"
                                         value={formData.clientId}
@@ -238,7 +268,7 @@ export default function EditProjectClient({ id }: { id: string }) {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-primary-dark">Fecha Inicio</label>
+                                        <label className="block text-sm font-medium text-primary-dark">{t('contracts.form.startDate')}</label>
                                         <input
                                             type="date"
                                             value={formData.startDate}
@@ -247,7 +277,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-primary-dark">Fecha Fin</label>
+                                        <label className="block text-sm font-medium text-primary-dark">{t('contracts.form.endDate')}</label>
                                         <input
                                             type="date"
                                             value={formData.endDate}
@@ -259,7 +289,7 @@ export default function EditProjectClient({ id }: { id: string }) {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-primary-dark">Tipo de Proyecto</label>
+                                        <label className="block text-sm font-medium text-primary-dark">{t('projects.form.type')}</label>
                                         <select
                                             value={formData.type}
                                             onChange={(e) => setFormData({ ...formData, type: e.target.value as ProjectType })}
@@ -292,7 +322,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-primary-dark">Presupuesto Inicial (€)</label>
+                                        <label className="block text-sm font-medium text-primary-dark">{t('projects.form.budget')} (€)</label>
                                         <input
                                             type="number"
                                             value={formData.budget}
@@ -324,7 +354,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                 )}
 
                                 <div>
-                                    <label className="block text-sm font-medium text-primary-dark">Estado</label>
+                                    <label className="block text-sm font-medium text-primary-dark">{t('contracts.form.status')}</label>
                                     <select
                                         value={formData.status}
                                         onChange={(e) => setFormData({ ...formData, status: e.target.value as Project['status'] })}
@@ -340,16 +370,15 @@ export default function EditProjectClient({ id }: { id: string }) {
                                 </div>
 
                                 <div className="border-t border-aux-grey pt-4 mt-4">
-                                    <h3 className="text-lg font-medium text-primary-dark mb-4">Reconocimiento de Ingresos</h3>
+                                    <h3 className="text-lg font-medium text-primary-dark mb-4">{t('projects.form.revenueMethod')}</h3>
 
                                     <div className="mb-4">
-                                        <label className="block text-sm font-medium text-primary-dark">Método de Reconocimiento</label>
                                         <select
                                             value={formData.revenueMethod || ''}
                                             onChange={(e) => setFormData({ ...formData, revenueMethod: (e.target.value as RevenueMethod) || undefined })}
                                             className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
                                         >
-                                            <option value="">-- Manual / Sin Método Específico --</option>
+                                            <option value="">{t('common.select')}</option>
                                             <option value="Input">Input Method (Cost-to-Cost)</option>
                                             <option value="Output">Output Method (Milestones)</option>
                                             <option value="Linear">Lineal (Ingreso Fijo Mensual)</option>
@@ -486,7 +515,131 @@ export default function EditProjectClient({ id }: { id: string }) {
                                         disabled={loading}
                                         className="w-full rounded-md bg-primary text-white px-4 py-2 hover:bg-aux-red disabled:opacity-50 font-medium"
                                     >
-                                        {loading ? 'Actualizando...' : 'Guardar Cambios'}
+                                        {loading ? t('common.loading') : t('common.save')}
+                                    </button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {/* TAB: Strategic Management */}
+                <TabsContent value="strategic" className="space-y-6">
+                    <Card className="max-w-4xl">
+                        <CardHeader>
+                            <CardTitle className="text-primary-dark">{t('projects.tabs.strategic')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-6">
+                                        <h3 className="text-lg font-medium text-primary-dark">{t('projects.form.strategicInfo')}</h3>
+
+                                        {/* Alignment (Max 30) */}
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.alignment')}</label>
+                                                <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.alignment} / 30</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="30"
+                                                value={formData.strategicBreakdown.alignment}
+                                                onChange={(e) => setFormData({
+                                                    ...formData,
+                                                    strategicBreakdown: { ...formData.strategicBreakdown, alignment: Number(e.target.value) }
+                                                })}
+                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            />
+                                        </div>
+
+                                        {/* Innovation (Max 30) */}
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.innovation')}</label>
+                                                <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.innovation} / 30</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="30"
+                                                value={formData.strategicBreakdown.innovation}
+                                                onChange={(e) => setFormData({
+                                                    ...formData,
+                                                    strategicBreakdown: { ...formData.strategicBreakdown, innovation: Number(e.target.value) }
+                                                })}
+                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            />
+                                        </div>
+
+                                        {/* Customer Impact (Max 20) */}
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.customerImpact')}</label>
+                                                <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.customerImpact} / 20</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="20"
+                                                value={formData.strategicBreakdown.customerImpact}
+                                                onChange={(e) => setFormData({
+                                                    ...formData,
+                                                    strategicBreakdown: { ...formData.strategicBreakdown, customerImpact: Number(e.target.value) }
+                                                })}
+                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            />
+                                        </div>
+
+                                        {/* Viability (Max 20) */}
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between">
+                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.viability')}</label>
+                                                <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.viability} / 20</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="20"
+                                                value={formData.strategicBreakdown.viability}
+                                                onChange={(e) => setFormData({
+                                                    ...formData,
+                                                    strategicBreakdown: { ...formData.strategicBreakdown, viability: Number(e.target.value) }
+                                                })}
+                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="bg-blue-50/50 p-6 rounded-xl border border-blue-100 flex flex-col items-center justify-center text-center h-full max-h-[300px]">
+                                            <h4 className="text-sm font-medium text-primary-dark/60 uppercase tracking-wider mb-2">{t('projects.form.strategicScore')}</h4>
+                                            <div className="text-5xl font-bold text-primary mb-2">{formData.strategicScore}</div>
+                                            <div className="text-sm text-primary-dark/40">Total (0-100)</div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-primary-dark mb-1">{t('projects.form.roi')} (%)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.expectedROI}
+                                                onChange={(e) => setFormData({ ...formData, expectedROI: Number(e.target.value) })}
+                                                className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                                step="0.1"
+                                                placeholder="Ej. 15.5"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t border-aux-grey mt-6">
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full rounded-md bg-primary text-white px-4 py-2 hover:bg-aux-red disabled:opacity-50 font-medium transition-colors"
+                                    >
+                                        {loading ? t('common.loading') : t('common.save')}
                                     </button>
                                 </div>
                             </form>

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 import { RoleProvider } from "@/context/RoleContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 export default function RootLayout({
   children,
@@ -22,11 +23,13 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.className} flex h-screen bg-slate-50`}>
         <AuthProvider>
-          <RoleProvider>
-            <div className="flex h-full w-full">
-              <ClientLayout>{children}</ClientLayout>
-            </div>
-          </RoleProvider>
+          <LanguageProvider>
+            <RoleProvider>
+              <div className="flex h-full w-full">
+                <ClientLayout>{children}</ClientLayout>
+              </div>
+            </RoleProvider>
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>

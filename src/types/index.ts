@@ -61,7 +61,13 @@ export interface Project {
     completionPercentage?: number; // For Fixed Price (Legacy/Simple)
 
     // Strategic Metrics
-    strategicScore?: number; // 0-100 Valor Estratégico
+    strategicScore?: number; // 0-100 Valor Estratégico (Calculated Sum)
+    strategicBreakdown?: {
+        alignment: number;      // Max 30
+        innovation: number;     // Max 30
+        customerImpact: number; // Max 20
+        viability: number;      // Max 20
+    };
     expectedROI?: number; // Return on Investment Estimado (%)
 
     // Advanced Revenue Recognition

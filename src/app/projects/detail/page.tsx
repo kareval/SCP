@@ -92,7 +92,7 @@ function ProjectDetailsContent() {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [workLogs, setWorkLogs] = useState<WorkLog[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'activity' | 'billing' | 'details' | 'eac'>('activity');
+    const [activeTab, setActiveTab] = useState<'activity' | 'billing' | 'details' | 'eac' | 'strategic'>('activity');
 
     // Form State for WorkLog
     const [logConcept, setLogConcept] = useState('');
@@ -484,6 +484,15 @@ function ProjectDetailsContent() {
                             }`}
                     >
                         Análisis EAC
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('strategic')}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'strategic'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-primary-dark/60 hover:text-primary-dark hover:border-aux-grey'
+                            }`}
+                    >
+                        Visión Estratégica
                     </button>
                     <button
                         onClick={() => setActiveTab('details')}
@@ -903,44 +912,7 @@ function ProjectDetailsContent() {
                                 </div>
                             )}
 
-                            {/* Strategic Details Section */}
-                            {(project.strategicScore !== undefined || project.expectedROI !== undefined) && (
-                                <div className="md:col-span-2 mt-4 pt-4 border-t border-aux-grey/30">
-                                    <h4 className="text-base font-semibold text-primary-dark mb-2">Información Estratégica</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {project.strategicScore !== undefined && (
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <dt className="text-sm font-medium text-primary-dark/60">Puntuación Estratégica</dt>
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
-                                                            <TooltipContent><p>Importancia estratégica cualitativa (0-100).</p></TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                </div>
-                                                <dd className="mt-1 text-sm font-bold text-primary-dark">{project.strategicScore} / 100</dd>
-                                            </div>
-                                        )}
-                                        {project.expectedROI !== undefined && (
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <dt className="text-sm font-medium text-primary-dark/60">ROI Esperado</dt>
-                                                    <TooltipProvider>
-                                                        <Tooltip>
-                                                            <TooltipTrigger><Info className="h-3 w-3 text-primary-dark/40" /></TooltipTrigger>
-                                                            <TooltipContent><p>Retorno de Inversión estimado.</p></TooltipContent>
-                                                        </Tooltip>
-                                                    </TooltipProvider>
-                                                </div>
-                                                <dd className={`mt-1 text-sm font-bold ${project.expectedROI >= 20 ? 'text-green-600' : 'text-primary-dark'}`}>
-                                                    {project.expectedROI}%
-                                                </dd>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
+
 
                             <div className="md:col-span-2 mt-4 pt-4 border-t border-aux-grey/30">
                                 <h4 className="text-base font-semibold text-primary-dark mb-2">Implicación Financiera</h4>
@@ -991,6 +963,105 @@ function ProjectDetailsContent() {
             {/* Tab Content: EAC */}
             {activeTab === 'eac' && (
                 <EACDashboard initialProject={project} initialLogs={workLogs} isEmbedded={true} />
+            )}
+
+            {/* Tab Content: Strategic */}
+            {activeTab === 'strategic' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Strategic Score Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-primary-dark">Puntuación Estratégica</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col items-center justify-center py-6">
+                            {project.strategicScore ? (
+                                <>
+                                    <div className="relative flex items-center justify-center p-4">
+                                        {/* Simple Circle / Score Display */}
+                                        <div className="w-32 h-32 rounded-full border-8 border-secondary-teal/20 flex items-center justify-center relative">
+                                            <div className="w-32 h-32 rounded-full border-8 border-secondary-teal absolute top-[-8px] left-[-8px]"
+                                                style={{ clipPath: `polygon(0 0, 100% 0, 100% ${project.strategicScore}%, 0 ${project.strategicScore}%)` }} // Simpler visualization or use Gauge component if reusable
+                                            />
+                                            <span className="text-4xl font-bold text-primary-dark">{project.strategicScore}</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-primary-dark/60 mt-2">Puntuación Total (0-100)</p>
+
+                                    {project.expectedROI !== undefined && (
+                                        <div className="mt-6 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+                                            <span className="text-sm font-medium text-green-800">ROI Esperado:</span>
+                                            <span className="text-lg font-bold text-green-700">{project.expectedROI}%</span>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-primary-dark/60">No se ha definido puntuación estratégica.</p>
+                                    <Link href={`/projects/edit/${project.id}`}>
+                                        <button className="mt-4 text-primary hover:underline text-sm font-medium">
+                                            Definir ahora
+                                        </button>
+                                    </Link>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Breakdown Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-primary-dark">Desglose de Criterios</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {project.strategicBreakdown ? (
+                                <div className="space-y-6">
+                                    {/* Alignment */}
+                                    <div>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="font-medium text-primary-dark">Alineación Estratégica</span>
+                                            <span className="text-primary-dark/80">{project.strategicBreakdown.alignment} / 30</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-aux-grey/30 rounded-full overflow-hidden">
+                                            <div className="h-full bg-primary" style={{ width: `${(project.strategicBreakdown.alignment / 30) * 100}%` }} />
+                                        </div>
+                                    </div>
+                                    {/* Innovation */}
+                                    <div>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="font-medium text-primary-dark">Innovación y Mercado</span>
+                                            <span className="text-primary-dark/80">{project.strategicBreakdown.innovation} / 30</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-aux-grey/30 rounded-full overflow-hidden">
+                                            <div className="h-full bg-secondary-teal" style={{ width: `${(project.strategicBreakdown.innovation / 30) * 100}%` }} />
+                                        </div>
+                                    </div>
+                                    {/* Customer Impact */}
+                                    <div>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="font-medium text-primary-dark">Impacto en Cliente</span>
+                                            <span className="text-primary-dark/80">{project.strategicBreakdown.customerImpact} / 20</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-aux-grey/30 rounded-full overflow-hidden">
+                                            <div className="h-full bg-tertiary-blue" style={{ width: `${(project.strategicBreakdown.customerImpact / 20) * 100}%` }} />
+                                        </div>
+                                    </div>
+                                    {/* Viability */}
+                                    <div>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="font-medium text-primary-dark">Viabilidad y Riesgo</span>
+                                            <span className="text-primary-dark/80">{project.strategicBreakdown.viability} / 20</span>
+                                        </div>
+                                        <div className="h-2 w-full bg-aux-grey/30 rounded-full overflow-hidden">
+                                            <div className="h-full bg-orange-500" style={{ width: `${(project.strategicBreakdown.viability / 20) * 100}%` }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-center text-primary-dark/60 py-8">Desglose no disponible.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             )}
         </div>
     );
