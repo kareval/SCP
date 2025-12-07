@@ -270,6 +270,25 @@ function ProjectDetailsContent() {
             .filter(m => m.completed)
             .reduce((acc, m) => acc + m.percentage, 0);
         calculatedRevenue = (progress / 100) * project.budget;
+    } else if (project.revenueMethod === 'Linear' && project.startDate && project.linearMonthlyAmount) {
+        const start = new Date(project.startDate);
+        const now = new Date();
+        const end = project.endDate ? new Date(project.endDate) : now;
+        // If strict linear, we use now, capped at end date.
+        const targetDate = now > end ? end : now;
+
+        // Ensure we don't calculate negative if start date is in future
+        if (targetDate >= start) {
+            const timeDiff = Math.max(0, targetDate.getTime() - start.getTime());
+            const daysDiff = timeDiff / (1000 * 3600 * 24);
+            const approximateMonths = daysDiff / 30.44; // Standard avg days/month
+
+            calculatedRevenue = approximateMonths * project.linearMonthlyAmount;
+            // Cap at Budget
+            calculatedRevenue = Math.min(calculatedRevenue, project.budget);
+        } else {
+            calculatedRevenue = 0;
+        }
     } else if (project.type === 'TM') {
         calculatedRevenue = totalIncurredCosts;
     }
@@ -430,8 +449,8 @@ function ProjectDetailsContent() {
 
                 {/* Margin Card */}
                 <Card className={`${project.revenueMethod === 'Input'
-                        ? ((revenue - totalIncurredCosts) / revenue) < 0.2 ? "bg-red-50" : "bg-green-50"
-                        : "bg-gray-50"
+                    ? ((revenue - totalIncurredCosts) / revenue) < 0.2 ? "bg-red-50" : "bg-green-50"
+                    : "bg-gray-50"
                     } flex flex-col h-full`}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                         <div className="flex items-center gap-2">
