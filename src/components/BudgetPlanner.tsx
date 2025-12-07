@@ -94,9 +94,6 @@ export function BudgetPlanner({ project, onUpdate }: BudgetPlannerProps) {
                     <p className="text-sm text-muted-foreground">Define fases y distribuye el presupuesto en el tiempo.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => window.open(`/financial-analysis/${project.id}`, '_blank')}>
-                        Ver Análisis Financiero
-                    </Button>
                     <Button onClick={saveChanges} className="bg-primary text-white">
                         <Save className="w-4 h-4 mr-2" /> Guardar Planificación
                     </Button>
