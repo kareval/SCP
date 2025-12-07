@@ -7,10 +7,11 @@ import { adminService } from '@/services/adminService'; // For seed button if ne
 import { Project, Invoice, Contract, WorkLog, Client } from '@/types'; // Added Client import if available or we fetch it
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Euro, FileText, AlertCircle, Download, ChevronDown, ChevronRight, BarChart3, TrendingUp, Wallet, PieChart as PieIcon, Activity } from 'lucide-react';
+import { Euro, FileText, AlertCircle, Download, ChevronDown, ChevronRight, BarChart3, TrendingUp, Wallet, PieChart as PieIcon, Activity, FileDown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useTranslation } from '@/context/LanguageContext';
+import { exportRevenueMatrixToExcel } from '@/utils/excelExport';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -474,16 +475,35 @@ export default function Dashboard() {
           <Card className="overflow-hidden shadow-lg border-aux-grey/30">
             <CardHeader className="bg-gray-50/50 border-b border-gray-100 flex flex-row items-center justify-between">
               <CardTitle className="text-primary-dark">Matriz de Revenue</CardTitle>
-              <div className="flex items-center gap-2">
-                {(['Monthly', 'Quarterly', 'Yearly'] as const).map(mode => (
-                  <button
-                    key={mode}
-                    onClick={() => setViewMode(mode)}
-                    className={`px-3 py-1 text-xs font-medium rounded-sm transition-colors ${viewMode === mode ? 'bg-primary text-white' : 'text-primary-dark hover:bg-aux-grey/10'}`}
-                  >
-                    {mode === 'Monthly' ? 'Mensual' : mode === 'Quarterly' ? 'Trimestral' : 'Anual'}
-                  </button>
-                ))}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  {(['Monthly', 'Quarterly', 'Yearly'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => setViewMode(mode)}
+                      className={`px-3 py-1 text-xs font-medium rounded-sm transition-colors ${viewMode === mode ? 'bg-primary text-white' : 'text-primary-dark hover:bg-aux-grey/10'}`}
+                    >
+                      {mode === 'Monthly' ? 'Mensual' : mode === 'Quarterly' ? 'Trimestral' : 'Anual'}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => exportRevenueMatrixToExcel({
+                    contracts,
+                    projects,
+                    columns,
+                    getContractRevenueForPeriod,
+                    getRevenueForPeriod,
+                    getTotalRevenueForPeriod,
+                    projectsByContract,
+                    viewMode
+                  })}
+                  className="flex items-center gap-1.5 bg-secondary-teal text-white px-3 py-1 rounded-sm hover:bg-secondary-teal/90 transition-colors text-xs font-medium"
+                  title="Exportar a Excel"
+                >
+                  <FileDown className="h-3.5 w-3.5" />
+                  Excel
+                </button>
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto p-0">
