@@ -874,6 +874,24 @@ function ProjectDetailsContent() {
                                 <dt className="text-sm font-medium text-primary-dark/60">Método de Revenue</dt>
                                 <dd className="mt-1 text-sm text-primary-dark">{project.revenueMethod || 'Manual / No definido'}</dd>
                             </div>
+                            {project.revenueMethod === 'Input' && project.totalEstimatedCosts && (
+                                <div>
+                                    <dt className="text-sm font-medium text-primary-dark/60">Costes Totales Estimados</dt>
+                                    <dd className="mt-1 text-sm text-primary-dark">{project.totalEstimatedCosts.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</dd>
+                                </div>
+                            )}
+                            {project.revenueMethod === 'Linear' && project.linearMonthlyAmount && (
+                                <div>
+                                    <dt className="text-sm font-medium text-primary-dark/60">Ingreso Mensual Fijo</dt>
+                                    <dd className="mt-1 text-sm text-primary-dark">{project.linearMonthlyAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</dd>
+                                </div>
+                            )}
+                            {project.type === 'TM' && project.hourlyRate && (
+                                <div>
+                                    <dt className="text-sm font-medium text-primary-dark/60">Tarifa por Hora</dt>
+                                    <dd className="mt-1 text-sm text-primary-dark">{project.hourlyRate.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}/h</dd>
+                                </div>
+                            )}
                             {project.contractId && (
                                 <div>
                                     <dt className="text-sm font-medium text-primary-dark/60">Contrato Marco</dt>
