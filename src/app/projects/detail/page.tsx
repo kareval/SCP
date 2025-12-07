@@ -420,7 +420,7 @@ function ProjectDetailsContent() {
                 </Card>
 
                 {/* Margin Card */}
-                <Card className={`${project.revenueMethod === 'Input'
+                <Card className={`${project.type !== 'TM'
                     ? ((revenue - totalIncurredCosts) / revenue) < 0.2 ? "bg-red-50" : "bg-green-50"
                     : "bg-gray-50"
                     } flex flex-col h-full`}>
@@ -436,16 +436,16 @@ function ProjectDetailsContent() {
                         </div>
                     </CardHeader>
                     <CardContent className="flex flex-col justify-center flex-grow">
-                        <div className={`text-xl md:text-2xl font-bold ${project.revenueMethod === 'Input' && revenue > 0
+                        <div className={`text-xl md:text-2xl font-bold ${project.type !== 'TM' && revenue > 0
                             ? (((revenue - totalIncurredCosts) / revenue) < 0.2 ? "text-red-700" : "text-green-700")
                             : "text-gray-400"
                             }`}>
-                            {project.revenueMethod === 'Input' && revenue > 0
+                            {project.type !== 'TM' && revenue > 0
                                 ? `${(((revenue - totalIncurredCosts) / revenue) * 100).toFixed(1)}%`
                                 : "N/A"}
                         </div>
                         <p className="text-xs text-primary-dark/60 mt-1">
-                            {project.revenueMethod === 'Input' ? 'Rentabilidad' : 'No disp. en T&M'}
+                            {project.type !== 'TM' ? 'Rentabilidad' : 'No disp. en T&M'}
                         </p>
                     </CardContent>
                 </Card>
