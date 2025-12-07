@@ -23,6 +23,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useRole } from '@/context/RoleContext';
+import { calculateProjectRevenue } from '@/utils/calculations';
 
 // Simple Gauge Component for Margin
 const MarginGauge = ({ value }: { value: number }) => {
@@ -258,40 +259,10 @@ function ProjectDetailsContent() {
 
     // Financial Calculations
     // Calculate Revenue Dynamically to ensure consistency with Progress/Logs
-    let calculatedRevenue = project.justifiedAmount; // Fallback
-
     const totalIncurredCosts = workLogs.reduce((acc, log) => acc + log.amount, 0);
 
-    if (project.revenueMethod === 'Input' && project.totalEstimatedCosts && project.totalEstimatedCosts > 0) {
-        const progress = Math.min(totalIncurredCosts / project.totalEstimatedCosts, 1);
-        calculatedRevenue = progress * project.budget;
-    } else if (project.revenueMethod === 'Output' && project.milestones) {
-        const progress = project.milestones
-            .filter(m => m.completed)
-            .reduce((acc, m) => acc + m.percentage, 0);
-        calculatedRevenue = (progress / 100) * project.budget;
-    } else if (project.revenueMethod === 'Linear' && project.startDate && project.linearMonthlyAmount) {
-        const start = new Date(project.startDate);
-        const now = new Date();
-        const end = project.endDate ? new Date(project.endDate) : now;
-        // If strict linear, we use now, capped at end date.
-        const targetDate = now > end ? end : now;
-
-        // Ensure we don't calculate negative if start date is in future
-        if (targetDate >= start) {
-            const timeDiff = Math.max(0, targetDate.getTime() - start.getTime());
-            const daysDiff = timeDiff / (1000 * 3600 * 24);
-            const approximateMonths = daysDiff / 30.44; // Standard avg days/month
-
-            calculatedRevenue = approximateMonths * project.linearMonthlyAmount;
-            // Cap at Budget
-            calculatedRevenue = Math.min(calculatedRevenue, project.budget);
-        } else {
-            calculatedRevenue = 0;
-        }
-    } else if (project.type === 'TM') {
-        calculatedRevenue = totalIncurredCosts;
-    }
+    // Unified Revenue Calc
+    const calculatedRevenue = calculateProjectRevenue(project, totalIncurredCosts);
 
     const revenue = calculatedRevenue;
     const billed = project.billedAmount;

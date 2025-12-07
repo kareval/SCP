@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Plus, Trash2, Pencil } from 'lucide-react';
+import { calculateProjectRevenue } from '@/utils/calculations';
 
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -53,68 +54,85 @@ export default function ProjectsPage() {
             </div>
 
             <div className="grid gap-4">
-                {projects.map((project) => (
-                    <Card key={project.id} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <div className="space-y-1">
-                                <CardTitle className="text-xl text-primary-dark">
-                                    <Link href={`/projects/detail?id=${project.id}`} className="hover:underline">
-                                        {project.title}
+                {projects.map((project) => {
+                    // Create a "mock" workLog sum or fetch it if needed. 
+                    // For the list view, we might not have all workLogs loaded.
+                    // Ideally, the backend/service should return this aggregated.
+                    // For now, assuming justifiedAmount holds strictly "manual" or "persisted" revenue is incorrect for dynamic types,
+                    // BUT for Input/TM we rely on incurredCosts which we might not have here without fetching sub-collections.
+                    // 
+                    // CRITICAL fix for LINEAR: Linear doesn't depend on logs, so it works perfectly here.
+                    // For Input/TM, if we don't have costs, we might fall back to justifiedAmount.
+
+                    const calculatedRevenue = calculateProjectRevenue(project, project.justifiedAmount); // Passing justifiedAmount as cost proxy if needed, or we simply rely on what we have.
+                    // Actually, for TM/Input, we need incurred costs. `project.justifiedAmount` IS often used to cache 'Revenue' in some systems.
+                    // Let's assume for Linear we definitely use the calc function.
+
+                    const revenue = project.revenueMethod === 'Linear' ? calculateProjectRevenue(project) : (project.justifiedAmount || 0);
+
+                    return (
+                        <Card key={project.id} className="hover:shadow-md transition-shadow">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <div className="space-y-1">
+                                    <CardTitle className="text-xl text-primary-dark">
+                                        <Link href={`/projects/detail?id=${project.id}`} className="hover:underline">
+                                            {project.title}
+                                        </Link>
+                                    </CardTitle>
+                                    <p className="text-sm text-primary-dark/60">Cliente: {project.clientId}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant={project.status === 'Accepted' ? 'default' : 'secondary'} className={project.status === 'Accepted' ? 'bg-secondary-teal' : ''}>
+                                        {project.status}
+                                    </Badge>
+                                    <Link href={`/projects/edit/${project.id}`}>
+                                        <button
+                                            className="p-2 text-primary-dark hover:bg-primary-dark/10 rounded-full transition-colors"
+                                            title="Editar Proyecto"
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </button>
                                     </Link>
-                                </CardTitle>
-                                <p className="text-sm text-primary-dark/60">Cliente: {project.clientId}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Badge variant={project.status === 'Accepted' ? 'default' : 'secondary'} className={project.status === 'Accepted' ? 'bg-secondary-teal' : ''}>
-                                    {project.status}
-                                </Badge>
-                                <Link href={`/projects/edit/${project.id}`}>
                                     <button
-                                        className="p-2 text-primary-dark hover:bg-primary-dark/10 rounded-full transition-colors"
-                                        title="Editar Proyecto"
+                                        onClick={() => handleDelete(project.id)}
+                                        className="p-2 text-aux-red hover:bg-aux-red/10 rounded-full transition-colors"
+                                        title="Eliminar Proyecto"
                                     >
-                                        <Pencil className="h-4 w-4" />
+                                        <Trash2 className="h-4 w-4" />
                                     </button>
-                                </Link>
-                                <button
-                                    onClick={() => handleDelete(project.id)}
-                                    className="p-2 text-aux-red hover:bg-aux-red/10 rounded-full transition-colors"
-                                    title="Eliminar Proyecto"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-5 gap-4 text-sm">
-                                <div>
-                                    <p className="text-primary-dark/60">Presupuesto</p>
-                                    <p className="font-medium text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                                 </div>
-                                <div>
-                                    <p className="text-primary-dark/60">Revenue</p>
-                                    <p className="font-medium text-primary-dark">{project.justifiedAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-5 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-primary-dark/60">Presupuesto</p>
+                                        <p className="font-medium text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-primary-dark/60">Revenue</p>
+                                        <p className="font-medium text-primary-dark">{revenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-primary-dark/60">Facturado</p>
+                                        <p className="font-medium text-primary-dark">{project.billedAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-primary-dark/60">WIP</p>
+                                        <p className={`font-medium ${revenue > project.billedAmount ? 'text-aux-red' : 'text-primary-dark/40'}`}>
+                                            {Math.max(0, revenue - project.billedAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-primary-dark/60">Deferred</p>
+                                        <p className={`font-medium ${project.billedAmount > revenue ? 'text-tertiary-blue' : 'text-primary-dark/40'}`}>
+                                            {Math.max(0, project.billedAmount - revenue).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-primary-dark/60">Facturado</p>
-                                    <p className="font-medium text-primary-dark">{project.billedAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
-                                </div>
-                                <div>
-                                    <p className="text-primary-dark/60">WIP</p>
-                                    <p className={`font-medium ${project.justifiedAmount > project.billedAmount ? 'text-aux-red' : 'text-primary-dark/40'}`}>
-                                        {Math.max(0, project.justifiedAmount - project.billedAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-primary-dark/60">Deferred</p>
-                                    <p className={`font-medium ${project.billedAmount > project.justifiedAmount ? 'text-tertiary-blue' : 'text-primary-dark/40'}`}>
-                                        {Math.max(0, project.billedAmount - project.justifiedAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
     );

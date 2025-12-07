@@ -13,6 +13,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { projectService } from '@/services/projectService';
+import { calculateProjectRevenue } from '@/utils/calculations';
 
 interface EACDashboardProps {
     initialProject: Project;
@@ -35,47 +36,10 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
             const totalCost = workLogs.reduce((acc, log) => acc + log.amount, 0);
             const progress = Math.min((totalCost / project.totalEstimatedCosts) * 100, 100);
             setManualProgress(Number(progress.toFixed(2)));
-        } else if (project.revenueMethod === 'Linear' && project.startDate && project.linearMonthlyAmount) {
-            const start = new Date(project.startDate);
-            const now = new Date();
-            // Cap at end date if project is over or if we want to stop revenue recognition at end date
-            const end = project.endDate ? new Date(project.endDate) : now;
-            const targetDate = now > end ? end : now;
-
-            // Calculate full months elapsed (or fraction?)
-            // Usually linear is pro-rated or by full month. Let's do month difference + fraction of days?
-            // "Precalcula el ingreso mensual" suggests (Budget / Months).
-            // Let's use simple month difference first.
-
-            const monthsElapsed = (targetDate.getFullYear() - start.getFullYear()) * 12 + (targetDate.getMonth() - start.getMonth());
-            // Add fraction of current month??
-            // For simplicity, let's stick to simple "months started" or allow manual adjustment.
-            // But better: use days for smoother graph.
-            // Let's stick to the "months" logic used in auto-calc: (Diff in months).
-            // Actually, let's use a standard "elapsed months" logic including fraction.
-
-            const oneDay = 24 * 60 * 60 * 1000;
-            const diffDays = Math.max(0, (targetDate.getTime() - start.getTime()) / oneDay);
-            const totalDays = project.endDate ? Math.max(1, (new Date(project.endDate).getTime() - start.getTime()) / oneDay) : diffDays;
-
-            // Wait, if I use the "Monthly Amount", I should count MONTHS.
-            // Progress = (Months Elapsed * MonthlyAmount) / Budget.
-            // Let's do: (currentTimestamp - startTimestamp) / (endTimestamp - startTimestamp) * 100 ??? 
-            // NO, the user wants "fixed monthly amount".
-            // So Revenue = Months * Amount.
-            // Let's calc months.
-
-            let months = (targetDate.getFullYear() - start.getFullYear()) * 12 + (targetDate.getMonth() - start.getMonth());
-            if (targetDate.getDate() >= start.getDate()) months += 1; // Count current month if passed start day? 
-            // Or just use true "Months" floating point.
-
-            const timeDiff = Math.max(0, targetDate.getTime() - start.getTime());
-            const daysDiff = timeDiff / (1000 * 3600 * 24);
-            const approximateMonths = daysDiff / 30.44; // Avg days in month
-
-            const revenue = approximateMonths * project.linearMonthlyAmount;
+        } else if (project.revenueMethod === 'Linear') {
+            // New consolidated linear logic
+            const revenue = calculateProjectRevenue(project);
             const progress = project.budget > 0 ? Math.min((revenue / project.budget) * 100, 100) : 0;
-
             setManualProgress(Number(progress.toFixed(2)));
         }
     }, [project, workLogs]);
@@ -85,6 +49,17 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
 
     // 2. Calculate EV (Earned Value)
     const BAC = project.budget;
+    // For Linear, EV is simply the Unified Revenue. For Input/Output, ManualProgress is derived from unified logic anyway.
+    // However, ManualProgress is a UI slider/state. To match unified logic 100%, we should assume:
+    // If user hasn't touched the slider (we set it in useEffect), then it matches.
+    // But `calculateProjectRevenue` is the source of truth for "Revenue".
+    // "Revenue" IS "Earned Value" in strict terms for Fixed Price.
+    const revenue = calculateProjectRevenue(project, AC);
+
+    // If we want EV to react to manual slider changes for "What-If" analysis?
+    // Then we keep EV = BAC * (manualProgress / 100).
+    // The useEffect syncs manualProgress to calculated state on load.
+    // So this is correct for "What-If" but also matches actual if untouched.
     const EV = BAC * (manualProgress / 100);
 
     // 3. Calculate CPI (Cost Performance Index)
