@@ -75,6 +75,12 @@ export interface Project {
     endDate?: string;
     budgetLines: BudgetLine[];
     isAdvance: boolean;
+
+    // Simulation Storage
+    lastEACSimulation?: {
+        progress: number;
+        lastUpdated: string;
+    };
 }
 
 export interface ProjectPhase {

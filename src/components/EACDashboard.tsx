@@ -12,8 +12,10 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button"; // Assuming Button component exists OR use standard button
 import { projectService } from '@/services/projectService';
 import { calculateProjectRevenue } from '@/utils/calculations';
+import { Save } from "lucide-react";
 
 interface EACDashboardProps {
     initialProject: Project;
@@ -23,10 +25,17 @@ interface EACDashboardProps {
 export default function EACDashboard({ initialProject, initialLogs }: EACDashboardProps) {
     const [project, setProject] = useState<Project>(initialProject);
     const [workLogs, setWorkLogs] = useState<WorkLog[]>(initialLogs);
-    const [manualProgress, setManualProgress] = useState<number>(0);
+    const [manualProgress, setManualProgress] = useState<number>(initialProject.lastEACSimulation?.progress || 0);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        // Initial Guess for Progress
+        // Only set default progress if NO persisted simulation exists
+        if (project.lastEACSimulation) {
+            setManualProgress(project.lastEACSimulation.progress);
+            return;
+        }
+
+        // Initial Guess for Progress if no simulation
         if (project.revenueMethod === 'Output' && project.milestones) {
             const progress = project.milestones
                 .filter(m => m.completed)
@@ -74,18 +83,56 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex items-center space-x-4">
-                <Link href="/financial-analysis" className="text-primary-dark/60 hover:text-primary-dark">
-                    <ArrowLeft className="h-6 w-6" />
-                </Link>
-                <div>
-                    <h1 className="text-3xl font-bold text-primary-dark">Análisis EAC: {project.title}</h1>
-                    <div className="flex items-center space-x-2 text-sm text-primary-dark/60">
-                        <span>{project.clientId}</span>
-                        <span>•</span>
-                        <Badge variant="outline">BAC: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</Badge>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <Link href="/financial-analysis" className="text-primary-dark/60 hover:text-primary-dark">
+                        <ArrowLeft className="h-6 w-6" />
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-bold text-primary-dark">Análisis EAC: {project.title}</h1>
+                        <div className="flex items-center space-x-2 text-sm text-primary-dark/60">
+                            <span>{project.clientId}</span>
+                            <span>•</span>
+                            <Badge variant="outline">BAC: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</Badge>
+                            {project.lastEACSimulation && (
+                                <>
+                                    <span>•</span>
+                                    <span className="text-xs text-primary/80">
+                                        Simulación: {new Date(project.lastEACSimulation.lastUpdated).toLocaleDateString()}
+                                    </span>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
+                <Button
+                    onClick={async () => {
+                        setIsSaving(true);
+                        try {
+                            const updated = {
+                                ...project,
+                                lastEACSimulation: {
+                                    progress: manualProgress,
+                                    lastUpdated: new Date().toISOString()
+                                }
+                            };
+                            await projectService.updateProject(updated);
+                            setProject(updated);
+                            alert("Simulación guardada correctamente.");
+                        } catch (e) {
+                            console.error(e);
+                            alert("Error al guardar.");
+                        } finally {
+                            setIsSaving(false);
+                        }
+                    }}
+                    disabled={isSaving}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                >
+                    <Save className="h-4 w-4" />
+                    {isSaving ? 'Guardando...' : 'Guardar Simulación'}
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -113,11 +160,11 @@ export default function EACDashboard({ initialProject, initialLogs }: EACDashboa
                         <div>
 
                             <div className="flex justify-between items-center mb-1">
-                                <label className="text-sm font-medium text-primary-dark">Coste Real Actual (AC)</label>
+                                <label className="text-sm font-medium text-primary-dark">Coste Real Actual (AC / COGS)</label>
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                        <TooltipContent><p>Actual Cost. Coste real incurrido hasta la fecha (Horas + Gastos).</p></TooltipContent>
+                                        <TooltipContent><p>Actual Cost / Cost of Goods Sold. Coste real incurrido hasta la fecha (Horas + Gastos).</p></TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
