@@ -68,7 +68,7 @@ export interface Project {
     phases?: ProjectPhase[];
     monthlyBudget?: MonthlyBudget[];
 
-    // Billing Forecast (CFO Feature)
+    // Billing Forecast
     billingForecast?: BillingForecastItem[];
 
     startDate?: string;

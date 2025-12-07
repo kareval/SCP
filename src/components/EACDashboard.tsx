@@ -359,7 +359,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                     </CardContent>
                 </Card>
 
-                {/* Accounting Position Panel (CFO Feature) */}
+                {/* Accounting Position Panel */}
                 <Card className="lg:col-span-3 bg-slate-50 border-t-4 border-t-purple-600">
                     <CardHeader>
                         <CardTitle className="text-primary-dark flex items-center gap-2">
