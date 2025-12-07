@@ -48,10 +48,11 @@ export function calculateProjectRevenue(project: Project, incurredCosts: number 
         return (progress / 100) * project.budget;
     }
 
-    // 4. Time & Materials (Revenue = Costs)
-    if (project.type === 'TM') {
+    // 4. Time & Materials and Internal (Revenue = Costs)
+    if (project.type === 'TM' || project.type === 'Internal') {
         return incurredCosts;
     }
+
 
     // Fallback (e.g., manual updates if justifiedAmount is used directly)
     return project.justifiedAmount || 0;

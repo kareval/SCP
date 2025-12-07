@@ -297,6 +297,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                         >
                                             <option value="TM">Time & Materials (T&M)</option>
                                             <option value="Fixed">Precio Fijo (Fixed Price)</option>
+                                            <option value="Internal">Proyecto Interno</option>
                                         </select>
                                         <div className="mt-2">
                                             {formData.type === 'TM' ? (
@@ -335,9 +336,12 @@ export default function EditProjectClient({ id }: { id: string }) {
                                     </div>
                                 </div>
 
-                                {formData.type === 'TM' && (
+                                {(formData.type === 'TM' || formData.type === 'Internal') && (
                                     <div>
-                                        <label className="block text-sm font-medium text-primary-dark">Tarifa por Hora (€)</label>
+                                        <label className="block text-sm font-medium text-primary-dark">
+                                            Tarifa por Hora (€)
+                                            {formData.type === 'Internal' && <span className="text-xs text-gray-500 ml-2">(Para seguimiento de coste interno)</span>}
+                                        </label>
                                         <input
                                             type="number"
                                             value={formData.hourlyRate || ''}
@@ -348,7 +352,10 @@ export default function EditProjectClient({ id }: { id: string }) {
                                             placeholder="Ej: 50.00"
                                         />
                                         <p className="text-xs text-primary-dark/60 mt-1">
-                                            Se usará para calcular automáticamente el importe al registrar horas.
+                                            {formData.type === 'TM'
+                                                ? 'Se usará para calcular automáticamente el importe al registrar horas.'
+                                                : 'Se usará para trackear el coste de oportunidad del proyecto interno.'
+                                            }
                                         </p>
                                     </div>
                                 )}

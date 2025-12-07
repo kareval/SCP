@@ -14,7 +14,7 @@ export interface BudgetLine {
     type: 'CAPEX' | 'OPEX';
 }
 
-export type ProjectType = 'TM' | 'Fixed';
+export type ProjectType = 'TM' | 'Fixed' | 'Internal';
 
 export interface WorkLog {
     id: string;
@@ -76,7 +76,7 @@ export interface Project {
     totalEstimatedCosts?: number; // For Input Method
     milestones?: Milestone[]; // For Output Method
     linearMonthlyAmount?: number; // For Linear Method
-    hourlyRate?: number; // For T&M Projects
+    hourlyRate?: number; // For T&M and Internal Projects
 
     // Time-Phased Budgeting
     phases?: ProjectPhase[];
