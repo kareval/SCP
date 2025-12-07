@@ -311,7 +311,10 @@ function ProjectDetailsContent() {
             </div>
 
             {/* Financial Health Cards */}
-            <div className={`grid grid-cols-1 md:grid-cols-3 ${deferred > 0 ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-4`}>
+            <div className={`grid grid-cols-1 md:grid-cols-3 ${(deferred > 0 && wip > 0) ? 'xl:grid-cols-6' :
+                    (deferred > 0 || wip > 0) ? 'xl:grid-cols-5' :
+                        'xl:grid-cols-4'
+                } gap-4`}>
                 <Card className="flex flex-col h-full">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <div className="flex items-center gap-2">
@@ -382,6 +385,32 @@ function ProjectDetailsContent() {
                         <div className="text-xl md:text-2xl font-bold text-primary-dark">{billed.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                     </CardContent>
                 </Card>
+
+                {/* Revenue Leakage (WIP) Card (Conditional) */}
+                {wip > 0 && (
+                    <Card className="bg-red-50 border-red-100 flex flex-col h-full">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <div className="flex items-center gap-2">
+                                <CardTitle className="text-sm font-medium text-red-800">Revenue Leakage (WIP)</CardTitle>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-3 w-3 text-red-800/40" /></TooltipTrigger>
+                                        <TooltipContent className="max-w-[300px]">
+                                            <p className="font-bold">Work In Progress (Pendiente de Facturar)</p>
+                                            <p>Ingresos reconocidos (trabajo hecho) pero no facturados.</p>
+                                            <p className="mt-1 text-xs opacity-90">Representa un riesgo de "Fuga de Ingresos" si no se factura pronto.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex flex-col justify-center flex-grow">
+                            <div className="text-xl md:text-2xl font-bold text-red-700">
+                                {wip.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Deferred Revenue Card (Conditional) */}
                 {deferred > 0 && (
