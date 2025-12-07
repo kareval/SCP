@@ -104,10 +104,24 @@ export default function ContractsPage() {
                                         {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <div className="pt-2">
+                                <div className="pt-2 flex items-center justify-between">
                                     <Badge variant={contract.status === 'Active' ? 'default' : 'secondary'} className={contract.status === 'Active' ? 'bg-secondary-teal' : ''}>
                                         {contract.status === 'Active' ? 'Activo' : 'Cerrado'}
                                     </Badge>
+
+                                    {contract.acquisitionCost && contract.acquisitionCost > 0 && (
+                                        <div className="flex items-center gap-1" title="Ratio LTV:CAC (Objetivo > 3)">
+                                            <span className="text-xs text-primary-dark/60">Eficiencia:</span>
+                                            <Badge
+                                                variant="outline"
+                                                className={`${(contract.tcv / contract.acquisitionCost) >= 3
+                                                    ? 'bg-green-50 text-green-700 border-green-200'
+                                                    : 'bg-red-50 text-red-700 border-red-200'}`}
+                                            >
+                                                x{(contract.tcv / contract.acquisitionCost).toFixed(1)}
+                                            </Badge>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </CardContent>

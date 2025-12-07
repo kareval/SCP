@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import { calculateProjectRevenue } from '@/utils/calculations';
 
+import PortfolioMatrix from '@/components/PortfolioMatrix';
+
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
@@ -52,6 +54,9 @@ export default function ProjectsPage() {
                     </button>
                 </Link>
             </div>
+
+            {/* Strategic Analysis */}
+            <PortfolioMatrix projects={projects} />
 
             <div className="grid gap-4">
                 {projects.map((project) => {
