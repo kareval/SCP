@@ -25,7 +25,7 @@ export interface WorkLog {
     hours?: number; // Optional for T&M
 }
 
-export type RevenueMethod = 'Input' | 'Output';
+export type RevenueMethod = 'Input' | 'Output' | 'Linear';
 
 export interface Milestone {
     id: string;
@@ -61,6 +61,7 @@ export interface Project {
     revenueMethod?: RevenueMethod;
     totalEstimatedCosts?: number; // For Input Method
     milestones?: Milestone[]; // For Output Method
+    linearMonthlyAmount?: number; // For Linear Method
     hourlyRate?: number; // For T&M Projects
 
     // Time-Phased Budgeting

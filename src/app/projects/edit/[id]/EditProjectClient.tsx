@@ -32,7 +32,8 @@ export default function EditProjectClient({ id }: { id: string }) {
         status: 'Budgeted' as Project['status'],
         startDate: '',
         endDate: '',
-        hourlyRate: 0
+        hourlyRate: 0,
+        linearMonthlyAmount: 0
     });
 
     const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -63,7 +64,8 @@ export default function EditProjectClient({ id }: { id: string }) {
                         status: found.status,
                         startDate: found.startDate || '',
                         endDate: found.endDate || '',
-                        hourlyRate: found.hourlyRate || 0
+                        hourlyRate: found.hourlyRate || 0,
+                        linearMonthlyAmount: found.linearMonthlyAmount || 0
                     });
                     if (found.milestones) {
                         setMilestones(found.milestones);
@@ -102,6 +104,25 @@ export default function EditProjectClient({ id }: { id: string }) {
         setMilestones(milestones.filter(m => m.id !== id));
     };
 
+    // Auto-calculate Linear Monthly Amount
+    useEffect(() => {
+        if (formData.type === 'Fixed' && formData.revenueMethod === 'Linear' && formData.budget > 0 && formData.startDate && formData.endDate) {
+            const start = new Date(formData.startDate);
+            const end = new Date(formData.endDate);
+            const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+
+            if (months > 0) {
+                // If the stored amount is 0 or user just switched method, auto-cal.
+                // We might want to allow override. But "precalcula" suggests we set it.
+                // We can check if it matches the calc, otherwise update.
+                const amount = formData.budget / months;
+                // Only update if significantly different to avoid loops or overwriting manual edits? 
+                // User requirement was "precalcula". I will overwrite on change of budget/dates.
+                setFormData(prev => ({ ...prev, linearMonthlyAmount: Number(amount.toFixed(2)) }));
+            }
+        }
+    }, [formData.budget, formData.revenueMethod, formData.type, formData.startDate, formData.endDate]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!project) return;
@@ -121,7 +142,8 @@ export default function EditProjectClient({ id }: { id: string }) {
                 milestones: formData.revenueMethod === 'Output' ? milestones : undefined,
                 startDate: formData.startDate,
                 endDate: formData.endDate,
-                hourlyRate: formData.type === 'TM' ? Number(formData.hourlyRate) : undefined
+                hourlyRate: formData.type === 'TM' ? Number(formData.hourlyRate) : undefined,
+                linearMonthlyAmount: (formData.type === 'Fixed' && formData.revenueMethod === 'Linear') ? Number(formData.linearMonthlyAmount) : undefined
             };
 
             const projectToSave = JSON.parse(JSON.stringify(updatedProject));
@@ -327,6 +349,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                             <option value="">-- Manual / Sin Método Específico --</option>
                                             <option value="Input">Input Method (Cost-to-Cost)</option>
                                             <option value="Output">Output Method (Milestones)</option>
+                                            <option value="Linear">Lineal (Ingreso Fijo Mensual)</option>
                                         </select>
                                         <div className="mt-2">
                                             {formData.revenueMethod === 'Input' && (
@@ -347,6 +370,16 @@ export default function EditProjectClient({ id }: { id: string }) {
                                                     <AlertDescription className="text-gray-700 text-xs">
                                                         El avance se mide por hitos completados.
                                                         <br /><strong>Revenue =</strong> Suma de % de Hitos Completados x Presupuesto
+                                                    </AlertDescription>
+                                                </Alert>
+                                            )}
+                                            {formData.revenueMethod === 'Linear' && (
+                                                <Alert className="bg-gray-50 border-gray-200">
+                                                    <Info className="h-4 w-4 text-gray-600" />
+                                                    <AlertTitle className="text-gray-800 text-xs font-bold">Lineal (Fixed Monthly)</AlertTitle>
+                                                    <AlertDescription className="text-gray-700 text-xs">
+                                                        Ingreso fijo cada mes.
+                                                        <br /><strong>Revenue =</strong> Meses transcurridos x Ingreso Mensual
                                                     </AlertDescription>
                                                 </Alert>
                                             )}
@@ -413,6 +446,24 @@ export default function EditProjectClient({ id }: { id: string }) {
                                                     {milestones.length === 0 && <p className="text-xs text-primary-dark/40 text-center">No hay hitos definidos.</p>}
                                                 </div>
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {formData.revenueMethod === 'Linear' && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-primary-dark">Ingreso Mensual Fijo (€)</label>
+                                            <input
+                                                type="number"
+                                                value={formData.linearMonthlyAmount || ''}
+                                                onChange={(e) => setFormData({ ...formData, linearMonthlyAmount: Number(e.target.value) })}
+                                                className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                                min="0"
+                                                step="0.01"
+                                                required
+                                            />
+                                            <p className="text-xs text-primary-dark/60 mt-1">
+                                                Calculado automáticamente: Presupuesto Total / Meses de duración
+                                            </p>
                                         </div>
                                     )}
                                 </div>

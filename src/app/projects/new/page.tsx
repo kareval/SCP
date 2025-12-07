@@ -23,7 +23,10 @@ export default function NewProjectPage() {
         description: '',
         revenueMethod: undefined as RevenueMethod | undefined,
         totalEstimatedCosts: 0,
-        hourlyRate: 0
+        hourlyRate: 0,
+        linearMonthlyAmount: 0,
+        startDate: '',
+        endDate: ''
     });
 
     const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -63,6 +66,23 @@ export default function NewProjectPage() {
         setMilestones(milestones.filter(m => m.id !== id));
     };
 
+
+
+
+    // Auto-calculate Linear Monthly Amount
+    useEffect(() => {
+        if (formData.type === 'Fixed' && formData.revenueMethod === 'Linear' && formData.budget > 0 && formData.startDate && formData.endDate) {
+            const start = new Date(formData.startDate);
+            const end = new Date(formData.endDate);
+            const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+
+            if (months > 0) {
+                const amount = formData.budget / months;
+                setFormData(prev => ({ ...prev, linearMonthlyAmount: Number(amount.toFixed(2)) }));
+            }
+        }
+    }, [formData.budget, formData.revenueMethod, formData.type, formData.startDate, formData.endDate]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -84,6 +104,9 @@ export default function NewProjectPage() {
                 revenueMethod: formData.type === 'Fixed' ? formData.revenueMethod : undefined,
                 totalEstimatedCosts: (formData.type === 'Fixed' && formData.revenueMethod === 'Input') ? Number(formData.totalEstimatedCosts) : undefined,
                 milestones: (formData.type === 'Fixed' && formData.revenueMethod === 'Output') ? milestones : undefined,
+                linearMonthlyAmount: (formData.type === 'Fixed' && formData.revenueMethod === 'Linear') ? Number(formData.linearMonthlyAmount) : undefined,
+                startDate: formData.startDate || undefined,
+                endDate: formData.endDate || undefined,
                 hourlyRate: formData.type === 'TM' ? Number(formData.hourlyRate) : undefined
             };
 
@@ -211,6 +234,27 @@ export default function NewProjectPage() {
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-primary-dark">Fecha Inicio</label>
+                                <input
+                                    type="date"
+                                    value={formData.startDate}
+                                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                    className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-primary-dark">Fecha Fin</label>
+                                <input
+                                    type="date"
+                                    value={formData.endDate}
+                                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                    className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                />
+                            </div>
+                        </div>
+
                         {formData.type === 'TM' && (
                             <div>
                                 <label className="block text-sm font-medium text-primary-dark">Tarifa por Hora (€)</label>
@@ -243,6 +287,7 @@ export default function NewProjectPage() {
                                         <option value="">-- Manual / Sin Método Específico --</option>
                                         <option value="Input">Input Method (Cost-to-Cost)</option>
                                         <option value="Output">Output Method (Milestones)</option>
+                                        <option value="Linear">Lineal (Ingreso Fijo Mensual)</option>
                                     </select>
                                     <div className="mt-2">
                                         {formData.revenueMethod === 'Input' && (
@@ -263,6 +308,16 @@ export default function NewProjectPage() {
                                                 <AlertDescription className="text-gray-700 text-xs">
                                                     El avance se mide por hitos completados.
                                                     <br /><strong>Revenue =</strong> Suma de % de Hitos Completados x Presupuesto
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
+                                        {formData.revenueMethod === 'Linear' && (
+                                            <Alert className="bg-gray-50 border-gray-200">
+                                                <Info className="h-4 w-4 text-gray-600" />
+                                                <AlertTitle className="text-gray-800 text-xs font-bold">Lineal (Fixed Monthly)</AlertTitle>
+                                                <AlertDescription className="text-gray-700 text-xs">
+                                                    Ingreso fijo cada mes.
+                                                    <br /><strong>Revenue =</strong> Meses transcurridos x Ingreso Mensual
                                                 </AlertDescription>
                                             </Alert>
                                         )}
@@ -329,6 +384,24 @@ export default function NewProjectPage() {
                                                 {milestones.length === 0 && <p className="text-xs text-primary-dark/40 text-center">No hay hitos definidos.</p>}
                                             </div>
                                         </div>
+                                    </div>
+                                )}
+
+                                {formData.revenueMethod === 'Linear' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-primary-dark">Ingreso Mensual Fijo (€)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.linearMonthlyAmount || ''}
+                                            onChange={(e) => setFormData({ ...formData, linearMonthlyAmount: Number(e.target.value) })}
+                                            className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
+                                            min="0"
+                                            step="0.01"
+                                            required
+                                        />
+                                        <p className="text-xs text-primary-dark/60 mt-1">
+                                            Calculado automáticamente: Presupuesto Total / Meses de duración
+                                        </p>
                                     </div>
                                 )}
                             </div>
