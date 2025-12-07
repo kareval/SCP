@@ -95,25 +95,33 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     {!isEmbedded && (
-                        <Link href="/financial-analysis" className="text-primary-dark/60 hover:text-primary-dark">
-                            <ArrowLeft className="h-6 w-6" />
-                        </Link>
-                    )}
-                    <div>
-                        {!isEmbedded && <h1 className="text-3xl font-bold text-primary-dark">Análisis EAC: {project.title}</h1>}
-                        <div className="flex items-center space-x-2 text-sm text-primary-dark/60">
-                            {!isEmbedded && <><span>{project.clientId}</span><span>•</span></>}
-                            <Badge variant="outline">BAC: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</Badge>
-                            {project.lastEACSimulation && (
-                                <>
+                        <>
+                            <Link href="/financial-analysis" className="text-primary-dark/60 hover:text-primary-dark">
+                                <ArrowLeft className="h-6 w-6" />
+                            </Link>
+                            <div>
+                                <h1 className="text-3xl font-bold text-primary-dark">Análisis EAC: {project.title}</h1>
+                                <div className="flex items-center space-x-2 text-sm text-primary-dark/60">
+                                    <span>{project.clientId}</span>
                                     <span>•</span>
-                                    <span className="text-xs text-primary/80">
-                                        Simulación: {new Date(project.lastEACSimulation.lastUpdated).toLocaleDateString()}
-                                    </span>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                                    <Badge variant="outline">BAC: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</Badge>
+                                    {project.lastEACSimulation && (
+                                        <>
+                                            <span>•</span>
+                                            <span className="text-xs text-primary/80">
+                                                Simulación: {new Date(project.lastEACSimulation.lastUpdated).toLocaleDateString()}
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                    {/* If embedded, we might want just the simulation info or nothing? 
+                        If we hide the whole left part, we lose the "Simulation Date" info.
+                        Let's show the Simulation Date info near the button or somewhere else if embedded?
+                        For now, per "remove header", I'll hide the whole left block. 
+                     */}
                 </div>
                 <Button
                     onClick={async () => {
