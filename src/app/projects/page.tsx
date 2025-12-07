@@ -79,7 +79,7 @@ export default function ProjectsPage() {
                                                     {project.title}
                                                 </Link>
                                             </CardTitle>
-                                            <p className="text-sm text-primary-dark/60">Client: {project.clientId}</p>
+                                            <p className="text-sm text-primary-dark/60">{t('projects.card.client')}: {project.clientId}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant={project.status === 'Accepted' ? 'default' : 'secondary'} className={project.status === 'Accepted' ? 'bg-secondary-teal' : ''}>
@@ -105,25 +105,25 @@ export default function ProjectsPage() {
                                     <CardContent>
                                         <div className="grid grid-cols-5 gap-4 text-sm">
                                             <div>
-                                                <p className="text-primary-dark/60">Budget</p>
+                                                <p className="text-primary-dark/60">{t('projects.card.budget')}</p>
                                                 <p className="font-medium text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                                             </div>
                                             <div>
-                                                <p className="text-primary-dark/60">Revenue</p>
+                                                <p className="text-primary-dark/60">{t('projects.card.revenue')}</p>
                                                 <p className="font-medium text-primary-dark">{revenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                                             </div>
                                             <div>
-                                                <p className="text-primary-dark/60">Billed</p>
+                                                <p className="text-primary-dark/60">{t('projects.card.billed')}</p>
                                                 <p className="font-medium text-primary-dark">{project.billedAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                                             </div>
                                             <div>
-                                                <p className="text-primary-dark/60">WIP</p>
+                                                <p className="text-primary-dark/60">{t('projects.card.wip')}</p>
                                                 <p className={`font-medium ${revenue > project.billedAmount ? 'text-aux-red' : 'text-primary-dark/40'}`}>
                                                     {Math.max(0, revenue - project.billedAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-primary-dark/60">Deferred</p>
+                                                <p className="text-primary-dark/60">{t('projects.card.deferred')}</p>
                                                 <p className={`font-medium ${project.billedAmount > revenue ? 'text-tertiary-blue' : 'text-primary-dark/40'}`}>
                                                     {Math.max(0, project.billedAmount - revenue).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                                                 </p>

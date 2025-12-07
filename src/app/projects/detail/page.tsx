@@ -841,7 +841,7 @@ function ProjectDetailsContent() {
                                         </div>
                                         <div className="text-right">
                                             <span className="font-bold text-primary-dark">
-                                                {invoice.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                                                {invoice.totalAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                                             </span>
                                             <Badge className="ml-2 bg-secondary-teal text-white" variant="outline">{invoice.status}</Badge>
                                         </div>

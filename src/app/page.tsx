@@ -83,7 +83,7 @@ export default function Dashboard() {
           const invDate = new Date(inv.date);
           return invDate.getMonth() === d.getMonth() && invDate.getFullYear() === d.getFullYear();
         })
-        .reduce((acc, inv) => acc + inv.amount, 0);
+        .reduce((acc, inv) => acc + inv.baseAmount, 0);
 
       data.push({ name: monthLabel, amount: totalInfo });
     }
@@ -270,7 +270,7 @@ export default function Dashboard() {
   // Financial (from original Dashboard)
   const totalBudget = projects.reduce((acc, p) => acc + p.budget, 0);
   const totalJustified = projects.reduce((acc, p) => acc + p.justifiedAmount, 0);
-  const totalBilled = invoices.reduce((acc, i) => acc + i.amount, 0);
+  const totalBilled = invoices.reduce((acc, i) => acc + i.baseAmount, 0);
   const wipAmount = totalJustified - totalBilled; // Can be negative if billed > justified (Deferred)
 
   const efficiencyRatio = totalBudget > 0 ? (totalJustified / totalBudget) * 100 : 0;

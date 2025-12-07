@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { projectService } from '@/services/projectService';
-import { Project, Invoice, BillingForecastItem } from '@/types';
+import { Project, Invoice, BillingForecastItem, WorkLog } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,16 +18,24 @@ import {
     DialogTrigger,
     DialogFooter
 } from "@/components/ui/dialog";
-import { AlertCircle, CheckCircle, FileText, Plus, X, Calendar, DollarSign, Search, Filter, AlertTriangle } from 'lucide-react';
-import { generateMonthlyBreakdownPDF } from '@/lib/pdfGenerator';
+import { AlertCircle, CheckCircle, FileText, Plus, X, Calendar, DollarSign, Search, Filter, AlertTriangle, Download } from 'lucide-react';
+import { generateMonthlyBreakdownPDF, generateInvoicePDF } from '@/lib/pdfGenerator';
 import { useRole } from '@/context/RoleContext';
+import { useTranslation } from '@/context/LanguageContext';
 
 export default function BillingPage() {
+    const { t } = useTranslation();
     const { role } = useRole();
     const [projects, setProjects] = useState<Project[]>([]);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'pending' | 'invoices' | 'reconciliation'>('pending');
+    const [showPdfDownload, setShowPdfDownload] = useState(false);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('feature_enablePdfGeneration');
+        if (stored) setShowPdfDownload(JSON.parse(stored));
+    }, []);
 
     // Invoice Form State
     const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
@@ -39,6 +47,105 @@ export default function BillingPage() {
         status: 'Draft',
         isAdvance: false
     });
+
+    // WIP Invoice State
+    const [isWipModalOpen, setIsWipModalOpen] = useState(false);
+    const [projectLogs, setProjectLogs] = useState<WorkLog[]>([]);
+    const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
+
+    const handleOpenWipModal = async (project: Project) => {
+        setLoading(true);
+        try {
+            // Fetch logs just in time
+            const logs = await projectService.getWorkLogs(project.id);
+            // Filter unbilled logs
+            const unbilled = logs.filter(l => !l.billedInvoiceId);
+            setProjectLogs(unbilled);
+            setSelectedLogIds(new Set(unbilled.map(l => l.id))); // Select all by default
+            setSelectedProject(project);
+            setIsWipModalOpen(true);
+
+            // Pre-fill invoice data based on selection
+            updateWipInvoiceData(unbilled, project);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateWipInvoiceData = (logs: WorkLog[], project: Project) => {
+        const total = logs.reduce((acc, l) => acc + l.amount, 0);
+        setNewInvoice({
+            date: new Date().toISOString().split('T')[0],
+            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            taxRate: 21,
+            status: 'Draft',
+            isAdvance: false,
+            baseAmount: total,
+            concept: `Servicios - ${logs.length} actividades hasta ${new Date().toLocaleDateString()}`,
+            // We store the linked IDs temporarily in the invoice object creation flow or manage them separately
+            // For simplicity, we'll access 'selectedLogIds' when saving
+        });
+    };
+
+    const toggleLogSelection = (logId: string) => {
+        const newSet = new Set(selectedLogIds);
+        if (newSet.has(logId)) newSet.delete(logId);
+        else newSet.add(logId);
+        setSelectedLogIds(newSet);
+
+        // Recalculate amount
+        const selectedLogs = projectLogs.filter(l => newSet.has(l.id));
+        if (selectedProject) updateWipInvoiceData(selectedLogs, selectedProject);
+    };
+
+    const handleCreateWipInvoice = async () => {
+        if (!selectedProject || !newInvoice.baseAmount) return;
+
+        const base = Number(newInvoice.baseAmount);
+        const rate = newInvoice.taxRate || 21;
+        const tax = base * (rate / 100);
+        const total = base + tax;
+
+        const invoice: Invoice = {
+            id: crypto.randomUUID(),
+            number: newInvoice.number || `DRAFT-${Date.now()}`, // Temporary number if not provided
+            projectId: selectedProject.id,
+            date: newInvoice.date!,
+            dueDate: newInvoice.dueDate,
+
+            baseAmount: base,
+            taxRate: rate,
+            taxAmount: tax,
+            totalAmount: total,
+
+            concept: newInvoice.concept || '',
+            status: newInvoice.status as any,
+            isAdvance: false,
+            notes: `Generado desde WIP (${selectedLogIds.size} items)`,
+            linkedWorkLogIds: Array.from(selectedLogIds)
+        };
+
+        try {
+            await projectService.createInvoice(invoice);
+
+            if (invoice.status === 'Sent' || invoice.status === 'Paid') {
+                const updatedProject = {
+                    ...selectedProject,
+                    billedAmount: selectedProject.billedAmount + invoice.baseAmount
+                };
+                await projectService.updateProject(updatedProject);
+            }
+
+            setIsWipModalOpen(false);
+            setSelectedProject(null);
+            await fetchData();
+        } catch (error) {
+            console.error("Error creating WIP invoice:", error);
+            alert("Error al crear factura WIP");
+        }
+    };
 
     const fetchData = async () => {
         try {
@@ -63,32 +170,33 @@ export default function BillingPage() {
     const currentYear = new Date().getFullYear();
     const invoicedYTD = invoices
         .filter(i => new Date(i.date).getFullYear() === currentYear && i.status !== 'Draft')
-        .reduce((acc, i) => acc + i.amount, 0);
+        .reduce((acc, i) => acc + i.baseAmount, 0);
 
     const outstandingAmount = invoices
         .filter(i => i.status === 'Sent')
-        .reduce((acc, i) => acc + i.amount, 0);
+        .reduce((acc, i) => acc + i.totalAmount, 0);
 
     const overdueAmount = invoices
         .filter(i => i.status === 'Sent' && i.dueDate && new Date(i.dueDate) < new Date())
-        .reduce((acc, i) => acc + i.amount, 0);
+        .reduce((acc, i) => acc + i.totalAmount, 0);
 
     // Pending Billing Calculation (Forecast due + WIP)
-    // This is a simplified estimation
     const pendingBilling = projects.reduce((acc, p) => {
         const wip = Math.max(0, p.justifiedAmount - p.billedAmount);
         const forecastDue = p.billingForecast
             ?.filter(f => new Date(f.date) <= new Date())
             .reduce((sum, f) => sum + f.amount, 0) || 0;
-        // We take the max of WIP or Forecast as a rough "Ready to Bill" indicator, 
-        // or just sum WIP if we want to be conservative about work done.
-        // Let's use WIP as the primary driver for "Ready to Bill" in T&M/Input, and Forecast for Output.
         return acc + (p.revenueMethod === 'Output' ? forecastDue : wip);
     }, 0);
 
 
     const handleCreateInvoice = async () => {
-        if (!selectedProject || !newInvoice.amount || !newInvoice.number) return;
+        if (!selectedProject || !newInvoice.baseAmount || !newInvoice.number) return;
+
+        const base = Number(newInvoice.baseAmount);
+        const rate = newInvoice.taxRate || 21;
+        const tax = base * (rate / 100);
+        const total = base + tax;
 
         const invoice: Invoice = {
             id: crypto.randomUUID(),
@@ -96,8 +204,12 @@ export default function BillingPage() {
             projectId: selectedProject.id,
             date: newInvoice.date!,
             dueDate: newInvoice.dueDate,
-            amount: Number(newInvoice.amount),
-            taxRate: newInvoice.taxRate || 21,
+
+            baseAmount: base,
+            taxRate: rate,
+            taxAmount: tax,
+            totalAmount: total,
+
             concept: newInvoice.concept || `Servicios Profesionales - ${selectedProject.title}`,
             status: newInvoice.status as any,
             isAdvance: newInvoice.isAdvance || false,
@@ -111,7 +223,7 @@ export default function BillingPage() {
             if (invoice.status === 'Sent' || invoice.status === 'Paid') {
                 const updatedProject = {
                     ...selectedProject,
-                    billedAmount: selectedProject.billedAmount + invoice.amount
+                    billedAmount: selectedProject.billedAmount + invoice.baseAmount
                 };
                 await projectService.updateProject(updatedProject);
             }
@@ -137,7 +249,7 @@ export default function BillingPage() {
             setSelectedProject(project);
             setNewInvoice(prev => ({
                 ...prev,
-                amount: forecastItem ? forecastItem.amount : 0,
+                baseAmount: forecastItem ? forecastItem.amount : 0,
                 concept: forecastItem ? forecastItem.notes : `Servicios - ${project.title}`,
                 date: forecastItem ? forecastItem.date : new Date().toISOString().split('T')[0],
                 // Auto-set due date to +30 days
@@ -152,17 +264,17 @@ export default function BillingPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-primary-dark">Facturación</h1>
+                <h1 className="text-3xl font-bold text-primary-dark">{t('billing.title')}</h1>
                 <Button onClick={() => openInvoiceModal()} className="bg-primary text-white">
-                    <Plus className="mr-2 h-4 w-4" /> Nueva Factura
+                    <Plus className="mr-2 h-4 w-4" /> {t('billing.newInvoice')}
                 </Button>
             </div>
 
-            {/* KPI Cards */}
+            {/* ... (Keep KPI Cards) ... */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-primary-dark/60">Facturado Año Actual</CardTitle>
+                        <CardTitle className="text-sm font-medium text-primary-dark/60">{t('billing.kpi.invoicedYtd')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-primary-dark">{invoicedYTD.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
@@ -170,7 +282,7 @@ export default function BillingPage() {
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-primary-dark/60">Pendiente de Cobro</CardTitle>
+                        <CardTitle className="text-sm font-medium text-primary-dark/60">{t('billing.kpi.outstanding')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-tertiary-blue">{outstandingAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
@@ -178,7 +290,7 @@ export default function BillingPage() {
                 </Card>
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-primary-dark/60">Vencido</CardTitle>
+                        <CardTitle className="text-sm font-medium text-primary-dark/60">{t('billing.kpi.overdue')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-aux-red">{overdueAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
@@ -186,7 +298,7 @@ export default function BillingPage() {
                 </Card>
                 <Card className="bg-slate-50 border-dashed border-2">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-primary-dark/60">Estimado a Facturar</CardTitle>
+                        <CardTitle className="text-sm font-medium text-primary-dark/60">{t('billing.kpi.forecast')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-slate-600">{pendingBilling.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
@@ -194,18 +306,18 @@ export default function BillingPage() {
                 </Card>
             </div>
 
+
             <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="pending">Pendiente de Facturar</TabsTrigger>
-                    <TabsTrigger value="invoices">Facturas</TabsTrigger>
-                    <TabsTrigger value="reconciliation">Conciliación</TabsTrigger>
+                    <TabsTrigger value="pending">{t('billing.tabs.pending')}</TabsTrigger>
+                    <TabsTrigger value="invoices">{t('billing.tabs.history')}</TabsTrigger>
+                    <TabsTrigger value="reconciliation">{t('billing.tabs.reconciliation')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="pending" className="space-y-4">
                     <div className="grid gap-4">
                         {projects.map(project => {
-                            const pendingForecasts = project.billingForecast?.filter(f => !f.amount /* Logic to check if billed? For now just show all future */) || [];
-                            // Better logic: Show items with date <= today + 30 days
+                            const pendingForecasts = project.billingForecast?.filter(f => !f.amount /* Logic to check if billed */) || [];
                             const upcomingForecasts = project.billingForecast?.filter(f => {
                                 const date = new Date(f.date);
                                 const today = new Date();
@@ -216,7 +328,7 @@ export default function BillingPage() {
 
                             const wip = Math.max(0, project.justifiedAmount - project.billedAmount);
 
-                            if (upcomingForecasts.length === 0 && wip < 100) return null; // Skip if nothing to bill
+                            if (upcomingForecasts.length === 0 && wip < 100) return null;
 
                             return (
                                 <Card key={project.id}>
@@ -224,7 +336,7 @@ export default function BillingPage() {
                                         <div className="flex justify-between">
                                             <div>
                                                 <CardTitle className="text-lg">{project.title}</CardTitle>
-                                                <CardDescription>{project.clientId}</CardDescription>
+                                                <CardDescription>{project.clientId} - {project.type}</CardDescription>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-sm text-muted-foreground">WIP (Trabajo no facturado)</p>
@@ -233,6 +345,7 @@ export default function BillingPage() {
                                         </div>
                                     </CardHeader>
                                     <CardContent>
+                                        {/* Forecasts List */}
                                         {upcomingForecasts.length > 0 && (
                                             <div className="mb-4">
                                                 <h4 className="text-sm font-medium mb-2 text-primary-dark/80">Hitos / Previsiones Próximas</h4>
@@ -253,7 +366,13 @@ export default function BillingPage() {
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="flex justify-end">
+
+                                        <div className="flex justify-end gap-2">
+                                            {project.type !== 'Fixed' && wip > 0 && (
+                                                <Button onClick={() => handleOpenWipModal(project)} variant="default" className="bg-primary">
+                                                    Facturar WIP ({wip.toLocaleString('es-ES', { maximumFractionDigits: 0 })}€)
+                                                </Button>
+                                            )}
                                             <Button onClick={() => openInvoiceModal(project)} variant="secondary">Crear Factura Manual</Button>
                                         </div>
                                     </CardContent>
@@ -273,13 +392,14 @@ export default function BillingPage() {
                                 <table className="w-full text-sm text-left">
                                     <thead className="bg-muted/50 text-muted-foreground">
                                         <tr>
-                                            <th className="p-3 font-medium">Nº Factura</th>
-                                            <th className="p-3 font-medium">Fecha</th>
-                                            <th className="p-3 font-medium">Proyecto</th>
-                                            <th className="p-3 font-medium">Concepto</th>
-                                            <th className="p-3 font-medium text-right">Importe</th>
-                                            <th className="p-3 font-medium text-center">Estado</th>
-                                            <th className="p-3 font-medium text-center">Vencimiento</th>
+                                            <th className="p-3 font-medium">{t('billing.table.number')}</th>
+                                            <th className="p-3 font-medium">{t('billing.table.date')}</th>
+                                            <th className="p-3 font-medium">{t('billing.table.project')}</th>
+                                            <th className="p-3 font-medium">{t('billing.table.concept')}</th>
+                                            <th className="p-3 font-medium text-right">{t('billing.table.amount')}</th>
+                                            <th className="p-3 font-medium text-center">{t('billing.table.status')}</th>
+                                            <th className="p-3 font-medium text-center">{t('billing.table.dueDate')}</th>
+                                            {showPdfDownload && <th className="p-3 font-medium text-center">{t('billing.table.pdf')}</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -292,14 +412,14 @@ export default function BillingPage() {
                                                     <td className="p-3">{new Date(invoice.date).toLocaleDateString()}</td>
                                                     <td className="p-3">{project?.title || 'Sin Proyecto'}</td>
                                                     <td className="p-3 truncate max-w-[200px]">{invoice.concept || '-'}</td>
-                                                    <td className="p-3 text-right font-bold">{invoice.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
+                                                    <td className="p-3 text-right font-bold">{invoice.baseAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</td>
                                                     <td className="p-3 text-center">
                                                         <Badge className={
                                                             invoice.status === 'Paid' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
                                                                 invoice.status === 'Sent' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
                                                                     'bg-gray-100 text-gray-800 hover:bg-gray-200'
                                                         }>
-                                                            {invoice.status === 'Paid' ? 'Pagada' : invoice.status === 'Sent' ? 'Enviada' : 'Borrador'}
+                                                            {invoice.status === 'Paid' ? t('billing.status.paid') : invoice.status === 'Sent' ? t('billing.status.sent') : t('billing.status.draft')}
                                                         </Badge>
                                                     </td>
                                                     <td className="p-3 text-center">
@@ -311,6 +431,18 @@ export default function BillingPage() {
                                                             invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '-'
                                                         )}
                                                     </td>
+                                                    {showPdfDownload && (
+                                                        <td className="p-3 text-center">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => project && generateInvoicePDF(invoice, project)}
+                                                                title={t('billing.actions.downloadPdf')}
+                                                            >
+                                                                <Download className="h-4 w-4" />
+                                                            </Button>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                             );
                                         })}
@@ -325,7 +457,7 @@ export default function BillingPage() {
                     <div className="grid gap-4">
                         {projects.map(project => {
                             const projectInvoices = invoices.filter(i => i.projectId === project.id && i.status !== 'Draft');
-                            const totalBilled = projectInvoices.reduce((acc, i) => acc + i.amount, 0);
+                            const totalBilled = projectInvoices.reduce((acc, i) => acc + i.baseAmount, 0);
                             const discrepancy = project.justifiedAmount - totalBilled;
                             const wip = Math.max(0, discrepancy);
                             const deferred = Math.max(0, -discrepancy);
@@ -374,7 +506,7 @@ export default function BillingPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Create Invoice Modal */}
+            {/* Create Invoice Modal (Manual / Forecast) */}
             <Dialog open={isInvoiceModalOpen} onOpenChange={setIsInvoiceModalOpen}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader>
@@ -398,7 +530,7 @@ export default function BillingPage() {
                                 ))}
                             </select>
                         </div>
-
+                        {/* ... Existing fields ... */}
                         <div>
                             <Label>Nº Factura</Label>
                             <Input
@@ -452,8 +584,8 @@ export default function BillingPage() {
                             <Label>Importe Base (€)</Label>
                             <Input
                                 type="number"
-                                value={newInvoice.amount || ''}
-                                onChange={(e) => setNewInvoice({ ...newInvoice, amount: Number(e.target.value) })}
+                                value={newInvoice.baseAmount || ''}
+                                onChange={(e) => setNewInvoice({ ...newInvoice, baseAmount: Number(e.target.value) })}
                             />
                         </div>
 
@@ -482,7 +614,86 @@ export default function BillingPage() {
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsInvoiceModalOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleCreateInvoice} disabled={!selectedProject || !newInvoice.amount}>Guardar Factura</Button>
+                        <Button onClick={handleCreateInvoice} disabled={!selectedProject || !newInvoice.baseAmount}>Guardar Factura</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* NEW: Bill WIP Modal */}
+            <Dialog open={isWipModalOpen} onOpenChange={setIsWipModalOpen}>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Facturar WIP - {selectedProject?.title}</DialogTitle>
+                        <DialogDescription>
+                            Selecciona las actividades pendientes para incluirlas en la factura.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="border rounded-md max-h-[300px] overflow-y-auto bg-slate-50 p-2">
+                            {projectLogs.length === 0 ? (
+                                <p className="text-center text-muted-foreground p-4">No hay actividad pendiente de facturar.</p>
+                            ) : (
+                                projectLogs.map(log => (
+                                    <div key={log.id} className="flex items-center space-x-3 p-2 border-b last:border-0 hover:bg-slate-100">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedLogIds.has(log.id)}
+                                            onChange={() => toggleLogSelection(log.id)}
+                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        />
+                                        <div className="flex-1 text-sm">
+                                            <div className="font-medium">{log.concept}</div>
+                                            <div className="text-muted-foreground text-xs">{new Date(log.date).toLocaleDateString()} {log.hours ? `(${log.hours}h)` : ''}</div>
+                                        </div>
+                                        <div className="font-bold text-sm">
+                                            {log.amount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                            {/* Simplified Invoice Form for WIP */}
+                            <div>
+                                <Label>Nº Factura</Label>
+                                <Input
+                                    value={newInvoice.number || ''}
+                                    onChange={(e) => setNewInvoice({ ...newInvoice, number: e.target.value })}
+                                    placeholder="F-2024-XXX"
+                                />
+                            </div>
+                            <div>
+                                <Label>Fecha Vencimiento (+30 días)</Label>
+                                <Input
+                                    type="date"
+                                    value={newInvoice.dueDate}
+                                    onChange={(e) => setNewInvoice({ ...newInvoice, dueDate: e.target.value })}
+                                />
+                            </div>
+                            <div className="col-span-2">
+                                <Label>Concepto Factura</Label>
+                                <Input
+                                    value={newInvoice.concept || ''}
+                                    onChange={(e) => setNewInvoice({ ...newInvoice, concept: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center bg-primary/5 p-4 rounded-md">
+                            <span className="font-bold text-lg text-primary-dark">Total Base Seleccionado:</span>
+                            <span className="font-bold text-2xl text-primary">
+                                {Number(newInvoice.baseAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                            </span>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsWipModalOpen(false)}>Cancelar</Button>
+                        <Button onClick={handleCreateWipInvoice} disabled={selectedLogIds.size === 0 || !newInvoice.number}>
+                            Generar Factura ({selectedLogIds.size} items)
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

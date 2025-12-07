@@ -45,6 +45,14 @@ export const en: LocaleKeys = {
             execution: 'Execution Control',
             operational: 'Operational Mgmt'
         },
+        card: {
+            client: 'Client',
+            budget: 'Budget',
+            revenue: 'Revenue',
+            billed: 'Billed',
+            wip: 'WIP',
+            deferred: 'Deferred'
+        },
         portfolioMatrix: {
             title: 'Portfolio Prioritization Matrix',
             description: 'Visualization of Value (Y Axis) vs. Effort/Cost (X Axis). Bubble size represents project volume (Revenue).',
@@ -85,6 +93,41 @@ export const en: LocaleKeys = {
             tcv: 'Total Value (TCV)',
             cac: 'Acquisition Cost (CAC)',
             ratio: 'Efficiency Ratio'
+        }
+    },
+    billing: {
+        title: 'Billing',
+        newInvoice: 'New Manual Invoice',
+        tabs: {
+            pending: 'Pending Billing',
+            history: 'Invoice History',
+            reconciliation: 'Reconciliation'
+        },
+        kpi: {
+            invoicedYtd: 'Invoiced YTD',
+            outstanding: 'Outstanding',
+            overdue: 'Overdue',
+            forecast: 'Forecast Due',
+            wip: 'WIP (Unbilled Work)'
+        },
+        table: {
+            number: 'Invoice #',
+            date: 'Date',
+            project: 'Project',
+            concept: 'Concept',
+            amount: 'Amount',
+            status: 'Status',
+            dueDate: 'Due Date',
+            pdf: 'PDF'
+        },
+        status: {
+            paid: 'Paid',
+            sent: 'Sent',
+            draft: 'Draft'
+        },
+        actions: {
+            billWip: 'Bill WIP',
+            downloadPdf: 'Download PDF'
         }
     }
 };

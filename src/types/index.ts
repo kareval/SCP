@@ -23,6 +23,7 @@ export interface WorkLog {
     concept: string;
     amount: number; // Revenue recognized
     hours?: number; // Optional for T&M
+    billedInvoiceId?: string; // Link to invoice if billed
 }
 
 export type RevenueMethod = 'Input' | 'Output' | 'Linear';
@@ -118,19 +119,36 @@ export interface BillingForecastItem {
     notes?: string;
 }
 
+export interface InvoiceItem {
+    id: string;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+}
+
 export interface Invoice {
     id: string;
     number: string;
     date: string;
     dueDate?: string; // New: Date payment is expected
     paymentDate?: string; // New: Date payment was received
-    amount: number;
-    taxRate: number; // New: Default 21%
+
+    // Amount breakdown
+    baseAmount: number; // Subtotal before tax (was 'amount')
+    taxRate: number; // % (e.g., 21)
+    taxAmount: number; // Calculated tax
+    totalAmount: number; // Base + Tax
+
     concept: string; // New: Description
     notes?: string; // New: Internal notes
     projectId: string;
     status: 'Draft' | 'Sent' | 'Paid' | 'Overdue'; // New: Overdue status
     isAdvance: boolean;
+
+    // Line items and linked logs
+    items?: InvoiceItem[];
+    linkedWorkLogIds?: string[];
 }
 
 export interface MonthlyStatement {

@@ -1,16 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { adminService } from '@/services/adminService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { AlertTriangle, Database, Trash2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Database, Trash2, RefreshCw, FlaskConical } from 'lucide-react';
 
 export default function SettingsPage() {
     const { logout } = useAuth();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const [enablePdfGeneration, setEnablePdfGeneration] = useState(false);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('feature_enablePdfGeneration');
+        if (stored) setEnablePdfGeneration(JSON.parse(stored));
+    }, []);
+
+    const togglePdfGeneration = () => {
+        const newValue = !enablePdfGeneration;
+        setEnablePdfGeneration(newValue);
+        localStorage.setItem('feature_enablePdfGeneration', JSON.stringify(newValue));
+        setMessage(`Generación de PDF ${newValue ? 'activada' : 'desactivada'}`);
+    };
 
     const handleSeedDatabase = async () => {
         if (!confirm('¿Estás seguro? Esto sobrescribirá datos existentes si coinciden los IDs.')) return;
@@ -73,6 +86,34 @@ export default function SettingsPage() {
                             {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
                             Cargar Datos
                         </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="border-indigo-100 bg-indigo-50/30">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-indigo-700">
+                        <FlaskConical className="h-5 w-5" />
+                        Funciones Experimentales
+                    </CardTitle>
+                    <CardDescription>Activa o desactiva funciones en desarrollo.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border border-indigo-100 rounded-lg bg-white">
+                        <div>
+                            <h3 className="font-medium text-indigo-900">Generación de Facturas PDF</h3>
+                            <p className="text-sm text-indigo-600/70">Permite descargar facturas en formato PDF desde el historial.</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-slate-500">{enablePdfGeneration ? 'Activado' : 'Desactivado'}</span>
+                            <Button
+                                onClick={togglePdfGeneration}
+                                variant={enablePdfGeneration ? 'default' : 'outline'}
+                                className={enablePdfGeneration ? 'bg-indigo-600 hover:bg-indigo-700' : ''}
+                            >
+                                {enablePdfGeneration ? 'ON' : 'OFF'}
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

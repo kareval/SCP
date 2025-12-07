@@ -145,20 +145,24 @@ export const MOCK_PROJECTS: Project[] = [
 
 export const MOCK_INVOICES: Invoice[] = [
     {
-        id: 'inv1', number: 'INV-2024-001', date: '2024-02-15', amount: 20000, projectId: 'p1',
-        status: 'Paid', isAdvance: false, taxRate: 21, concept: 'Hito 1: Análisis'
+        id: 'inv1', number: 'INV-2024-001', date: '2024-02-15',
+        baseAmount: 20000, taxRate: 21, taxAmount: 4200, totalAmount: 24200,
+        projectId: 'p1', status: 'Paid', isAdvance: false, concept: 'Hito 1: Análisis'
     },
     {
-        id: 'inv2', number: 'INV-2024-002', date: '2024-03-31', amount: 30000, projectId: 'p2',
-        status: 'Paid', isAdvance: false, taxRate: 21, concept: 'Horas Marzo'
+        id: 'inv2', number: 'INV-2024-002', date: '2024-03-31',
+        baseAmount: 30000, taxRate: 21, taxAmount: 6300, totalAmount: 36300,
+        projectId: 'p2', status: 'Paid', isAdvance: false, concept: 'Horas Marzo'
     },
     {
-        id: 'inv3', number: 'INV-2024-003', date: '2024-03-31', amount: 30000, projectId: 'p3',
-        status: 'Paid', isAdvance: false, taxRate: 21, concept: 'Mantenimiento Q1 Completo'
+        id: 'inv3', number: 'INV-2024-003', date: '2024-03-31',
+        baseAmount: 30000, taxRate: 21, taxAmount: 6300, totalAmount: 36300,
+        projectId: 'p3', status: 'Paid', isAdvance: false, concept: 'Mantenimiento Q1 Completo'
     },
     {
-        id: 'inv4', number: 'INV-2024-004', date: '2024-05-01', amount: 50000, projectId: 'p6',
-        status: 'Sent', isAdvance: true, taxRate: 21, concept: 'Licencias 2025 (Anticipo)'
+        id: 'inv4', number: 'INV-2024-004', date: '2024-05-01',
+        baseAmount: 50000, taxRate: 21, taxAmount: 10500, totalAmount: 60500,
+        projectId: 'p6', status: 'Sent', isAdvance: true, concept: 'Licencias 2025 (Anticipo)'
     }
 ];
 

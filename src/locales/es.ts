@@ -43,6 +43,14 @@ export const es = {
             execution: 'Control de Ejecución',
             operational: 'Gestión Operativa'
         },
+        card: {
+            client: 'Cliente',
+            budget: 'Presupuesto',
+            revenue: 'Revenue',
+            billed: 'Facturado',
+            wip: 'WIP',
+            deferred: 'Diferido'
+        },
         portfolioMatrix: {
             title: 'Matriz de Priorización de Cartera',
             description: 'Visualización de Valor (Eje Y) vs. Esfuerzo/Coste (Eje X). El tamaño de la burbuja representa el volumen del proyecto (Revenue).',
@@ -83,6 +91,41 @@ export const es = {
             tcv: 'Valor Total (TCV)',
             cac: 'Coste de Adquisición (CAC)',
             ratio: 'Ratio Eficiencia'
+        }
+    },
+    billing: {
+        title: 'Facturación',
+        newInvoice: 'Nueva Factura Manual',
+        tabs: {
+            pending: 'Pendiente de Facturar',
+            history: 'Histórico Facturas',
+            reconciliation: 'Conciliación'
+        },
+        kpi: {
+            invoicedYtd: 'Facturado Año Actual',
+            outstanding: 'Pendiente de Cobro',
+            overdue: 'Vencido',
+            forecast: 'Estimado a Facturar',
+            wip: 'WIP (Trabajo no facturado)'
+        },
+        table: {
+            number: 'Nº Factura',
+            date: 'Fecha',
+            project: 'Proyecto',
+            concept: 'Concepto',
+            amount: 'Importe',
+            status: 'Estado',
+            dueDate: 'Vencimiento',
+            pdf: 'PDF'
+        },
+        status: {
+            paid: 'Pagada',
+            sent: 'Enviada',
+            draft: 'Borrador'
+        },
+        actions: {
+            billWip: 'Facturar WIP',
+            downloadPdf: 'Descargar PDF'
         }
     }
 };
