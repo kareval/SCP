@@ -3,8 +3,9 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { es, LocaleKeys } from '@/locales/es';
 import { en } from '@/locales/en';
+import { it } from '@/locales/it';
 
-type Language = 'es' | 'en';
+type Language = 'es' | 'en' | 'it';
 
 interface LanguageContextType {
     language: Language;
@@ -19,7 +20,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     const t = (path: string): string => {
         const keys = path.split('.');
-        let current: any = language === 'es' ? es : en;
+        const localeMap = { es, en, it };
+        let current: any = localeMap[language];
 
         for (const key of keys) {
             if (current[key] === undefined) {

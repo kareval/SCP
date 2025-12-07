@@ -77,6 +77,12 @@ export default function Sidebar() {
                         >
                             EN
                         </button>
+                        <button
+                            onClick={() => setLanguage('it')}
+                            className={`px-2 py-1 rounded ${language === 'it' ? 'bg-primary text-white font-bold' : 'hover:bg-white/10'}`}
+                        >
+                            IT
+                        </button>
                     </div>
                 </div>
 
