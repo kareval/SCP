@@ -269,9 +269,13 @@ export default function Dashboard() {
   if (loading) return <div className="p-8">{t('common.loading')}</div>;
 
   // --- KPIs Calculations ---
-  // Financial (from original Dashboard)
-  const totalBudget = projects.reduce((acc, p) => acc + p.budget, 0);
-  const totalJustified = projects.reduce((acc, p) => acc + p.justifiedAmount, 0);
+  // Separate production projects from internal projects
+  const productionProjects = projects.filter(p => p.type !== 'Internal');
+  const internalProjects = projects.filter(p => p.type === 'Internal');
+
+  // Financial KPIs (PRODUCTION ONLY - excluding Internal projects)
+  const totalBudget = productionProjects.reduce((acc, p) => acc + p.budget, 0);
+  const totalJustified = productionProjects.reduce((acc, p) => acc + p.justifiedAmount, 0);
   const totalBilled = invoices.reduce((acc, i) => acc + i.baseAmount, 0);
   const wipAmount = totalJustified - totalBilled; // Can be negative if billed > justified (Deferred)
 
@@ -283,18 +287,26 @@ export default function Dashboard() {
 
   // Strategic (from Control Center)
   const totalTCV = contracts.reduce((acc, c) => acc + c.tcv, 0);
-  const globalBacklog = totalTCV - projects.reduce((acc, p) => {
+  const globalBacklog = totalTCV - productionProjects.reduce((acc, p) => {
     // Note: This matches the old logic but ideally we check billed or justified vs TCV. 
     // Assuming Backlog = TCV - Justified for simplicity or WorkLogs sum.
     // Using WorkLogs sum from previous implementation:
     return acc + workLogs.filter(l => l.projectId === p.id).reduce((sum, l) => sum + l.amount, 0);
   }, 0);
 
-  const currentYearRevenue = projects.reduce((acc, p) => {
+  const currentYearRevenue = productionProjects.reduce((acc, p) => {
     const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
     const endOfYear = new Date(currentDate.getFullYear(), 11, 31);
     return acc + getRevenueForPeriod(p.id, startOfYear, endOfYear);
   }, 0);
+
+  // Internal Projects Metrics (for tracking purposes)
+  const internalTotalCost = internalProjects.reduce((acc, p) => {
+    return acc + workLogs.filter(l => l.projectId === p.id).reduce((sum, l) => sum + l.amount, 0);
+  }, 0);
+  const internalTotalHours = workLogs
+    .filter(l => internalProjects.some(p => p.id === l.projectId) && l.hours)
+    .reduce((acc, l) => acc + (l.hours || 0), 0);
 
   // Grouping for Matrix
   const projectsByContract: Record<string, Project[]> = {};
@@ -414,6 +426,39 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Internal Projects - Only show if there are internal projects */}
+          {internalProjects.length > 0 && (
+            <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-gray-700">
+                    Proyectos Internos ({internalProjects.length})
+                  </CardTitle>
+                  <Activity className="h-4 w-4 text-gray-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-600">Coste Total</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {internalTotalCost.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Total Horas</p>
+                    <p className="text-2xl font-bold text-gray-800">
+                      {internalTotalHours.toFixed(1)}h
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2 italic">
+                  * No incluido en métricas de revenue de producción
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Row 3: Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
