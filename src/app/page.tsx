@@ -16,6 +16,7 @@ import {
   PieChart, Pie, Cell,
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
+import PortfolioMatrix from '@/components/PortfolioMatrix';
 
 // Colors for charts
 const COLORS = ['#be0036', '#002e67', '#008000', '#FF8042', '#8884d8'];
@@ -623,6 +624,12 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Row 3: Strategic Portfolio Matrix */}
+          <div className="pt-6">
+            <h3 className="text-lg font-bold text-primary-dark mb-4">{t('dashboard.strategicPortfolio')}</h3>
+            <PortfolioMatrix projects={projects} />
           </div>
 
         </TabsContent>
