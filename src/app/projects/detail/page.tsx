@@ -24,6 +24,64 @@ import {
 } from "@/components/ui/tooltip";
 import { useRole } from '@/context/RoleContext';
 
+// Simple Gauge Component for Margin
+const MarginGauge = ({ value }: { value: number }) => {
+    // Value should be 0-100
+    const clampedValue = Math.min(Math.max(value, 0), 100);
+    const radius = 40;
+    const stroke = 10;
+    const normalizedRadius = radius - stroke / 2;
+    const circumference = normalizedRadius * Math.PI;
+    const strokeDashoffset = circumference - (clampedValue / 100) * circumference;
+
+    // Color logic
+    const getColor = (v: number) => {
+        if (v < 20) return "text-red-500";
+        if (v < 40) return "text-orange-500";
+        return "text-green-500";
+    };
+
+    const colorClass = getColor(clampedValue);
+
+    return (
+        <div className="relative flex items-center justify-center p-4">
+            {/* Semi-circle Gauge */}
+            <svg
+                height={radius * 2}
+                width={radius * 2}
+                viewBox={`0 0 ${radius * 2} ${radius}`}
+                className="overflow-visible"
+            >
+                {/* Background Arc */}
+                <path
+                    d={`M ${stroke} ${radius} A ${normalizedRadius} ${normalizedRadius} 0 0 1 ${radius * 2 - stroke} ${radius}`}
+                    fill="none"
+                    stroke="#e5e7eb" // gray-200
+                    strokeWidth={stroke}
+                    strokeLinecap="round"
+                />
+                {/* Foreground Arc */}
+                <path
+                    d={`M ${stroke} ${radius} A ${normalizedRadius} ${normalizedRadius} 0 0 1 ${radius * 2 - stroke} ${radius}`}
+                    fill="none"
+                    className={colorClass}
+                    stroke="currentColor"
+                    strokeWidth={stroke}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
+                />
+            </svg>
+            <div className="absolute top-[60%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                <span className={`text-2xl font-bold ${colorClass}`}>
+                    {clampedValue.toFixed(0)}%
+                </span>
+            </div>
+        </div>
+    );
+};
+
 function ProjectDetailsContent() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
@@ -258,7 +316,7 @@ function ProjectDetailsContent() {
             </div>
 
             {/* Financial Health Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className={`grid grid-cols-1 md:grid-cols-3 ${deferred > 0 ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-4`}>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <div className="flex items-center gap-2">
@@ -330,6 +388,28 @@ function ProjectDetailsContent() {
                     </CardContent>
                 </Card>
 
+                {/* Deferred Revenue Card (Conditional) */}
+                {deferred > 0 && (
+                    <Card className="bg-orange-50 border-orange-100">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <div className="flex items-center gap-2">
+                                <CardTitle className="text-sm font-medium text-orange-800">Ingresos Diferidos</CardTitle>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger><Info className="h-3 w-3 text-orange-800/40" /></TooltipTrigger>
+                                        <TooltipContent><p>Facturado por adelantado aún no devengado (Facturado - Revenue).</p></TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-orange-700">
+                                {deferred.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {/* Backlog Card */}
                 <Card className="bg-slate-50">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -365,14 +445,14 @@ function ProjectDetailsContent() {
                             </TooltipProvider>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <div className={`text-2xl font-bold ${project.revenueMethod === 'Input' ? ((revenue - totalIncurredCosts) / revenue) < 0.2 ? "text-red-700" : "text-green-700" : "text-gray-500"}`}>
-                            {project.revenueMethod === 'Input' && revenue > 0
-                                ? `${(((revenue - totalIncurredCosts) / revenue) * 100).toFixed(1)}%`
-                                : "N/A"}
-                        </div>
-                        <p className="text-xs text-primary-dark/60 mt-1">
-                            {project.revenueMethod === 'Input' ? 'Real vs Coste' : 'No disponible en T&M'}
+                    <CardContent className="flex flex-col items-center justify-center pt-0 pb-4">
+                        {project.revenueMethod === 'Input' && revenue > 0 ? (
+                            <MarginGauge value={((revenue - totalIncurredCosts) / revenue) * 100} />
+                        ) : (
+                            <div className="text-2xl font-bold text-gray-400 py-6">N/A</div>
+                        )}
+                        <p className="text-xs text-primary-dark/60 -mt-2">
+                            {project.revenueMethod === 'Input' ? 'Rentabilidad' : 'No disp. en T&M'}
                         </p>
                     </CardContent>
                 </Card>
