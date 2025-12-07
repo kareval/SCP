@@ -436,91 +436,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
 
-        {/* --- STRATEGIC TAB --- */}
-        <TabsContent value="strategic" className="space-y-6">
-          {/* Row 1: KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-primary text-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-white/80">{t('dashboard.kpi.tcv')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{totalTCV.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-white/60 mt-1">Cartera total contratada</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-slate-50 border-slate-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.backlog')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-700">{globalBacklog.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60 mt-1">Pendiente de ejecutar</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.revenueYear')} {currentDate.getFullYear()}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-primary-dark">{currentYearRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60 mt-1">Reconocido este año</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Row 2: Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Client Concentration */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.clientConcentration')}</CardTitle>
-                <CardDescription>Valor de Cartera (TCV) por Cliente</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={clientConcentrationData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      label={({ name, percent }: { name?: string | number; percent?: number }) => `${((percent || 0) * 100).toFixed(0)}%`}
-                    >
-                      {clientConcentrationData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(val: number) => val.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Strategic Radar */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.strategicRadar')}</CardTitle>
-                <CardDescription>Media de puntuación por criterio</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={strategicRadarData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis />
-                    <Radar name="Puntuación Media" dataKey="A" stroke="#be0036" fill="#be0036" fillOpacity={0.6} />
-                    <Tooltip />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Row 3: Revenue Matrix */}
           <Card className="overflow-hidden shadow-lg border-aux-grey/30">
@@ -623,6 +539,92 @@ export default function Dashboard() {
               </table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* --- STRATEGIC TAB --- */}
+        <TabsContent value="strategic" className="space-y-6">
+          {/* Row 1: KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="bg-primary text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-white/80">{t('dashboard.kpi.tcv')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{totalTCV.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                <p className="text-xs text-white/60 mt-1">Cartera total contratada</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-slate-50 border-slate-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.backlog')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-slate-700">{globalBacklog.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                <p className="text-xs text-primary-dark/60 mt-1">Pendiente de ejecutar</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.revenueYear')} {currentDate.getFullYear()}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-primary-dark">{currentYearRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                <p className="text-xs text-primary-dark/60 mt-1">Reconocido este año</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Row 2: Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Client Concentration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.clientConcentration')}</CardTitle>
+                <CardDescription>Valor de Cartera (TCV) por Cliente</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={clientConcentrationData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      label={({ name, percent }: { name?: string | number; percent?: number }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                    >
+                      {clientConcentrationData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(val: number) => val.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Strategic Radar */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.strategicRadar')}</CardTitle>
+                <CardDescription>Media de puntuación por criterio</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={strategicRadarData}>
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="subject" />
+                    <PolarRadiusAxis />
+                    <Radar name="Puntuación Media" dataKey="A" stroke="#be0036" fill="#be0036" fillOpacity={0.6} />
+                    <Tooltip />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
         </TabsContent>
       </Tabs>
     </div>
