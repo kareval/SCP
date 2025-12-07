@@ -42,7 +42,8 @@ export const en: LocaleKeys = {
         newProject: 'New Project',
         tabs: {
             strategic: 'Strategic Portfolio',
-            execution: 'Execution Control'
+            execution: 'Execution Control',
+            operational: 'Operational Mgmt'
         },
         portfolioMatrix: {
             title: 'Portfolio Prioritization Matrix',

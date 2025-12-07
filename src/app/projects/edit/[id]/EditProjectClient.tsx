@@ -619,7 +619,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                             <div className="text-sm text-primary-dark/40">Total (0-100)</div>
                                         </div>
 
-                                        <div>
+                                        <div className="mb-2">
                                             <label className="block text-sm font-medium text-primary-dark mb-1">{t('projects.form.roi')} (%)</label>
                                             <input
                                                 type="number"

@@ -40,7 +40,8 @@ export const es = {
         newProject: 'Nuevo Proyecto',
         tabs: {
             strategic: 'Cartera Estratégica',
-            execution: 'Control de Ejecución'
+            execution: 'Control de Ejecución',
+            operational: 'Gestión Operativa'
         },
         portfolioMatrix: {
             title: 'Matriz de Priorización de Cartera',
