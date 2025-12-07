@@ -317,7 +317,7 @@ function ProjectDetailsContent() {
 
             {/* Financial Health Cards */}
             <div className={`grid grid-cols-1 md:grid-cols-3 ${deferred > 0 ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-4`}>
-                <Card>
+                <Card className="flex flex-col h-full">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <div className="flex items-center gap-2">
                             <CardTitle className="text-sm font-medium text-primary-dark/60">Presupuesto</CardTitle>
@@ -329,12 +329,12 @@ function ProjectDetailsContent() {
                             </TooltipProvider>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                    <CardContent className="flex flex-col justify-center flex-grow">
+                        <div className="text-xl md:text-2xl font-bold text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-l-4 border-l-primary flex flex-col h-full">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-primary">Revenue</CardTitle>
                         <Dialog>
@@ -358,10 +358,10 @@ function ProjectDetailsContent() {
                             </DialogContent>
                         </Dialog>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-primary-dark">{revenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                    <CardContent className="flex flex-col justify-center flex-grow">
+                        <div className="text-xl md:text-2xl font-bold text-primary-dark">{revenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                         {project.revenueMethod === 'Input' && (
-                            <div className="mt-2">
+                            <div className="mt-2 w-full">
                                 <div className="h-1 w-full bg-aux-grey/30 rounded-full overflow-hidden">
                                     <div className="h-full bg-primary" style={{ width: `${inputProgress}%` }} />
                                 </div>
@@ -371,7 +371,7 @@ function ProjectDetailsContent() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="flex flex-col h-full">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <div className="flex items-center gap-2">
                             <CardTitle className="text-sm font-medium text-primary-dark/60">Facturado</CardTitle>
@@ -383,14 +383,14 @@ function ProjectDetailsContent() {
                             </TooltipProvider>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-primary-dark">{billed.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                    <CardContent className="flex flex-col justify-center flex-grow">
+                        <div className="text-xl md:text-2xl font-bold text-primary-dark">{billed.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                     </CardContent>
                 </Card>
 
                 {/* Deferred Revenue Card (Conditional) */}
                 {deferred > 0 && (
-                    <Card className="bg-orange-50 border-orange-100">
+                    <Card className="bg-orange-50 border-orange-100 flex flex-col h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <div className="flex items-center gap-2">
                                 <CardTitle className="text-sm font-medium text-orange-800">Ingresos Diferidos</CardTitle>
@@ -402,8 +402,8 @@ function ProjectDetailsContent() {
                                 </TooltipProvider>
                             </div>
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-orange-700">
+                        <CardContent className="flex flex-col justify-center flex-grow">
+                            <div className="text-xl md:text-2xl font-bold text-orange-700">
                                 {deferred.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                             </div>
                         </CardContent>
@@ -411,7 +411,7 @@ function ProjectDetailsContent() {
                 )}
 
                 {/* Backlog Card */}
-                <Card className="bg-slate-50">
+                <Card className="bg-slate-50 flex flex-col h-full">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-primary-dark/60">Backlog</CardTitle>
                         <TooltipProvider>
@@ -421,20 +421,19 @@ function ProjectDetailsContent() {
                             </Tooltip>
                         </TooltipProvider>
                     </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-slate-700">
+                    <CardContent className="flex flex-col justify-center flex-grow">
+                        <div className="text-xl md:text-2xl font-bold text-slate-700">
                             {(project.budget - revenue).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Margin Card */}
-                <Card className={
-                    project.revenueMethod === 'Input'
+                <Card className={`${project.revenueMethod === 'Input'
                         ? ((revenue - totalIncurredCosts) / revenue) < 0.2 ? "bg-red-50" : "bg-green-50"
                         : "bg-gray-50"
-                }>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    } flex flex-col h-full`}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                         <div className="flex items-center gap-2">
                             <CardTitle className="text-sm font-medium text-primary-dark/60">Margen</CardTitle>
                             <TooltipProvider>
@@ -445,11 +444,11 @@ function ProjectDetailsContent() {
                             </TooltipProvider>
                         </div>
                     </CardHeader>
-                    <CardContent className="flex flex-col items-center justify-center pt-0 pb-4">
+                    <CardContent className="flex flex-col items-center justify-center flex-grow pt-0 pb-4">
                         {project.revenueMethod === 'Input' && revenue > 0 ? (
                             <MarginGauge value={((revenue - totalIncurredCosts) / revenue) * 100} />
                         ) : (
-                            <div className="text-2xl font-bold text-gray-400 py-6">N/A</div>
+                            <div className="text-xl md:text-2xl font-bold text-gray-400 py-6">N/A</div>
                         )}
                         <p className="text-xs text-primary-dark/60 -mt-2">
                             {project.revenueMethod === 'Input' ? 'Rentabilidad' : 'No disp. en T&M'}
