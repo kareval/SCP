@@ -364,7 +364,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                     <CardHeader>
                         <CardTitle className="text-primary-dark flex items-center gap-2">
                             <DollarSign className="h-5 w-5 text-purple-600" />
-                            Posición Contable (CFO View)
+                            Posición Contable
                         </CardTitle>
                         <CardDescription>Análisis de devengo vs facturación (WIP vs Deferred).</CardDescription>
                     </CardHeader>

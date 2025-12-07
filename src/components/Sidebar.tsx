@@ -8,12 +8,12 @@ import clsx from 'clsx';
 import { RoleSwitcher } from './RoleSwitcher';
 
 const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['PM', 'Billing', 'CFO'] },
-    { name: 'Contratos', href: '/contracts', icon: FileText, roles: ['PM', 'Billing', 'CFO'] },
-    { name: 'Proyectos', href: '/projects', icon: FolderKanban, roles: ['PM', 'CFO'] },
-    { name: 'Control Center', href: '/control-center', icon: BarChart3, roles: ['PM', 'CFO'] },
-    { name: 'Facturación', href: '/billing', icon: Receipt, roles: ['Billing', 'CFO'] },
-    { name: 'Configuración', href: '/settings', icon: Settings, roles: ['PM', 'Billing', 'CFO'] },
+    { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['PM', 'Billing'] },
+    { name: 'Contratos', href: '/contracts', icon: FileText, roles: ['PM', 'Billing'] },
+    { name: 'Proyectos', href: '/projects', icon: FolderKanban, roles: ['PM'] },
+    { name: 'Control Center', href: '/control-center', icon: BarChart3, roles: ['PM'] },
+    { name: 'Facturación', href: '/billing', icon: Receipt, roles: ['Billing'] },
+    { name: 'Configuración', href: '/settings', icon: Settings, roles: ['PM', 'Billing'] },
 ];
 
 export default function Sidebar() {

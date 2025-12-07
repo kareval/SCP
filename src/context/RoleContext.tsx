@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type Role = 'PM' | 'Billing' | 'CFO';
+export type Role = 'PM' | 'Billing';
 
 interface RoleContextType {
     role: Role;
@@ -20,7 +20,6 @@ export function RoleProvider({ children }: { children: ReactNode }) {
             <div className="fixed bottom-4 right-4 z-50 bg-white p-2 rounded-md shadow-lg border border-gray-200 flex gap-2 text-xs">
                 <button onClick={() => setRole('PM')} className={`px-2 py-1 rounded ${role === 'PM' ? 'bg-primary text-white' : 'bg-gray-100'}`}>PM</button>
                 <button onClick={() => setRole('Billing')} className={`px-2 py-1 rounded ${role === 'Billing' ? 'bg-primary text-white' : 'bg-gray-100'}`}>Billing</button>
-                <button onClick={() => setRole('CFO')} className={`px-2 py-1 rounded ${role === 'CFO' ? 'bg-primary text-white' : 'bg-gray-100'}`}>CFO</button>
             </div>
         </RoleContext.Provider>
     );

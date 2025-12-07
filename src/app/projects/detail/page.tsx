@@ -840,7 +840,7 @@ function ProjectDetailsContent() {
                             )}
 
                             <div className="md:col-span-2 mt-4 pt-4 border-t border-aux-grey/30">
-                                <h4 className="text-base font-semibold text-primary-dark mb-2">Implicación Financiera (CFO Note)</h4>
+                                <h4 className="text-base font-semibold text-primary-dark mb-2">Implicación Financiera</h4>
                                 <div className={`p-4 rounded-md border text-sm ${project.type === 'TM'
                                     ? 'bg-blue-50 border-blue-200 text-blue-800'
                                     : 'bg-orange-50 border-orange-200 text-orange-800'

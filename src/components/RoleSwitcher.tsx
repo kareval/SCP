@@ -12,12 +12,11 @@ export function RoleSwitcher() {
             <span className="text-sm font-medium text-primary-dark">Vista:</span>
             <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as 'PM' | 'Billing' | 'CFO')}
+                onChange={(e) => setRole(e.target.value as 'PM' | 'Billing')}
                 className="block w-full rounded-md border-gray-300 py-1 pl-2 pr-8 text-xs focus:border-primary focus:outline-none focus:ring-primary sm:text-sm bg-white text-primary-dark"
             >
                 <option value="PM">Jefe Proyecto</option>
                 <option value="Billing">Facturación</option>
-                <option value="CFO">Director Financiero</option>
             </select>
         </div>
     );
