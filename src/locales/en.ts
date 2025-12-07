@@ -11,7 +11,11 @@ export const en: LocaleKeys = {
         confirmDelete: 'Are you sure you want to delete this item?',
         active: 'Active',
         closed: 'Closed',
-        language: 'Language'
+        language: 'Language',
+        user: 'User',
+        demoUser: 'Demo User',
+        activeSession: 'Active Session',
+        saving: 'Saving...'
     },
     nav: {
         dashboard: 'Control Panel',
@@ -129,5 +133,37 @@ export const en: LocaleKeys = {
             billWip: 'Bill WIP',
             downloadPdf: 'Download PDF'
         }
+    },
+    eac: {
+        title: 'EAC Analysis',
+        bac: 'BAC',
+        simulation: 'Simulation',
+        saveSimulation: 'Save Simulation',
+        simulationSaved: 'Simulation saved successfully.',
+        errorSaving: 'Error saving.',
+        inputData: 'Input Data',
+        adjustProgress: 'Adjust actual progress to recalculate.',
+        totalBudget: 'Total Budget (BAC)',
+        totalBudgetDesc: 'Budget at Completion. Total approved budget.',
+        actualCost: 'Actual Cost (AC)',
+        actualCostDesc: 'Actual Cost. Total cost incurred to date.',
+        sumCosts: 'Sum of all recorded costs.',
+        physicalProgress: 'Actual Physical Progress (%)',
+        physicalProgressTooltip: 'Real percentage of scope completion, independent of cost.',
+        physicalProgressDesc: 'Indicates the percentage of work actually completed, regardless of cost.',
+        financialProjection: 'Financial Projection',
+        ev: 'Earned Value (EV)',
+        evTooltip: 'Budgeted value of work performed (BAC * % Progress)',
+        eac: 'Estimate at Completion (EAC)',
+        eacTooltip: 'Total estimated cost at completion (BAC / CPI).',
+        variation: 'Variance at Completion (VAC)',
+        variationTooltip: 'Expected budget deviation (BAC - EAC). Positive is good.',
+        cpi: 'Cost Performance Index (CPI)',
+        cpiTooltip: 'Cost efficiency (EV / AC). > 1.0 is efficient.',
+        tcpi: 'To Complete Performance Index (TCPI)',
+        tcpiTooltip: 'Efficiency required on maintaining work to meet budget.',
+        performanceCurve: 'Performance Curve',
+        planned: 'Planned (PV)',
+        projection: 'Projection'
     }
 };

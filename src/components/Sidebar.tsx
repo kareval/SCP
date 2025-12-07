@@ -85,8 +85,8 @@ export default function Sidebar() {
                         UD
                     </div>
                     <div className="ml-3">
-                        <p className="text-sm font-medium text-white">Usuario Demo</p>
-                        <p className="text-xs text-aux-grey">Sesión Activa</p>
+                        <p className="text-sm font-medium text-white">{t('common.demoUser')}</p>
+                        <p className="text-xs text-aux-grey">{t('common.activeSession')}</p>
                     </div>
                 </div>
             </div>

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"; // Assuming Button component ex
 import { projectService } from '@/services/projectService';
 import { calculateProjectRevenue } from '@/utils/calculations';
 import { Save } from "lucide-react";
+import { useTranslation } from '@/context/LanguageContext';
 
 interface EACDashboardProps {
     initialProject: Project;
@@ -24,6 +25,7 @@ interface EACDashboardProps {
 }
 
 export default function EACDashboard({ initialProject, initialLogs, isEmbedded = false }: EACDashboardProps) {
+    const { t } = useTranslation();
     const [project, setProject] = useState<Project>(initialProject);
     const [workLogs, setWorkLogs] = useState<WorkLog[]>(initialLogs);
     const [manualProgress, setManualProgress] = useState<number>(initialProject.lastEACSimulation?.progress || 0);
@@ -100,16 +102,16 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                                 <ArrowLeft className="h-6 w-6" />
                             </Link>
                             <div>
-                                <h1 className="text-3xl font-bold text-primary-dark">Análisis EAC: {project.title}</h1>
+                                <h1 className="text-3xl font-bold text-primary-dark">{t('eac.title')}: {project.title}</h1>
                                 <div className="flex items-center space-x-2 text-sm text-primary-dark/60">
                                     <span>{project.clientId}</span>
                                     <span>•</span>
-                                    <Badge variant="outline">BAC: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</Badge>
+                                    <Badge variant="outline">{t('eac.bac')}: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</Badge>
                                     {project.lastEACSimulation && (
                                         <>
                                             <span>•</span>
                                             <span className="text-xs text-primary/80">
-                                                Simulación: {new Date(project.lastEACSimulation.lastUpdated).toLocaleDateString()}
+                                                {t('eac.simulation')}: {new Date(project.lastEACSimulation.lastUpdated).toLocaleDateString()}
                                             </span>
                                         </>
                                     )}
@@ -136,10 +138,10 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                             };
                             await projectService.updateProject(updated);
                             setProject(updated);
-                            alert("Simulación guardada correctamente.");
+                            alert(t('eac.simulationSaved'));
                         } catch (e) {
                             console.error(e);
-                            alert("Error al guardar.");
+                            alert(t('eac.errorSaving'));
                         } finally {
                             setIsSaving(false);
                         }
@@ -149,7 +151,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                     className="flex items-center gap-2"
                 >
                     <Save className="h-4 w-4" />
-                    {isSaving ? 'Guardando...' : 'Guardar Simulación'}
+                    {isSaving ? t('common.saving') : t('eac.saveSimulation')}
                 </Button>
             </div>
 
@@ -157,18 +159,18 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                 {/* Control Panel */}
                 <Card className="lg:col-span-1 border-l-4 border-l-primary">
                     <CardHeader>
-                        <CardTitle className="text-primary-dark">Datos de Entrada</CardTitle>
-                        <CardDescription>Ajusta el avance real para recalcular.</CardDescription>
+                        <CardTitle className="text-primary-dark">{t('eac.inputData')}</CardTitle>
+                        <CardDescription>{t('eac.adjustProgress')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div>
 
                             <div className="flex justify-between items-center mb-1">
-                                <label className="text-sm font-medium text-primary-dark">Presupuesto Total (BAC)</label>
+                                <label className="text-sm font-medium text-primary-dark">{t('eac.totalBudget')}</label>
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                        <TooltipContent><p>Budget at Completion. Presupuesto total aprobado para el proyecto.</p></TooltipContent>
+                                        <TooltipContent><p>{t('eac.totalBudgetDesc')}</p></TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
@@ -178,26 +180,26 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         <div>
 
                             <div className="flex justify-between items-center mb-1">
-                                <label className="text-sm font-medium text-primary-dark">Coste Real Actual (AC)</label>
+                                <label className="text-sm font-medium text-primary-dark">{t('eac.actualCost')}</label>
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                        <TooltipContent><p>Actual Cost. Coste real incurrido hasta la fecha.</p></TooltipContent>
+                                        <TooltipContent><p>{t('eac.actualCostDesc')}</p></TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
                             <div className="text-2xl font-bold text-primary-dark">{AC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                            <p className="text-xs text-primary-dark/60 mt-1">Suma de todos los costes registrados.</p>
+                            <p className="text-xs text-primary-dark/60 mt-1">{t('eac.sumCosts')}</p>
                         </div>
 
                         <div>
 
                             <div className="flex justify-between items-center mb-2">
-                                <label className="text-sm font-medium text-primary-dark">Avance Físico Real (%)</label>
+                                <label className="text-sm font-medium text-primary-dark">{t('eac.physicalProgress')}</label>
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                        <TooltipContent><p>Porcentaje de completitud real del alcance, independiente del coste.</p></TooltipContent>
+                                        <TooltipContent><p>{t('eac.physicalProgressTooltip')}</p></TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
@@ -214,7 +216,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                                 <span className="text-xl font-bold text-primary w-16 text-right">{manualProgress}%</span>
                             </div>
                             <p className="text-xs text-primary-dark/60 mt-2">
-                                Indica el porcentaje de trabajo <strong>realmente completado</strong>, independientemente del coste.
+                                {t('eac.physicalProgressDesc')}
                             </p>
                         </div>
                     </CardContent>
@@ -225,7 +227,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                     <CardHeader>
                         <CardTitle className="text-primary-dark flex items-center gap-2">
                             <TrendingUp className="h-5 w-5" />
-                            Proyección Financiera
+                            {t('eac.financialProjection')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -233,11 +235,11 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col justify-between">
                             <div>
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-medium text-primary-dark">Valor Ganado (EV)</h3>
+                                    <h3 className="font-medium text-primary-dark">{t('eac.ev')}</h3>
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                            <TooltipContent><p>Valor presupuestado del trabajo realizado (BAC * % Avance)</p></TooltipContent>
+                                            <TooltipContent><p>{t('eac.evTooltip')}</p></TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </div>
@@ -249,11 +251,11 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col justify-between">
                             <div>
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-medium text-primary-dark">Estimación al Cierre (EAC)</h3>
+                                    <h3 className="font-medium text-primary-dark">{t('eac.eac')}</h3>
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                            <TooltipContent><p>Proyección de coste final basada en el rendimiento actual (BAC / CPI)</p></TooltipContent>
+                                            <TooltipContent><p>{t('eac.eacTooltip')}</p></TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </div>
@@ -268,11 +270,11 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         <div className={`p-4 rounded-lg shadow-sm border ${CPI >= 1 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} h-full flex flex-col justify-between`}>
                             <div>
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-medium ${CPI >= 1 ? 'text-green-800' : 'text-red-800'}`}>Eficiencia (CPI)</h3>
+                                    <h3 className={`font-medium ${CPI >= 1 ? 'text-green-800' : 'text-red-800'}`}>{t('eac.cpi')}</h3>
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger><Info className={`h-4 w-4 ${CPI >= 1 ? 'text-green-800/40' : 'text-red-800/40'}`} /></TooltipTrigger>
-                                            <TooltipContent><p>EV / AC. Mayor a 1 es eficiente.</p></TooltipContent>
+                                            <TooltipContent><p>{t('eac.cpiTooltip')}</p></TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </div>
@@ -296,11 +298,11 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         <div className={`p-4 rounded-lg shadow-sm border ${variation >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} h-full flex flex-col justify-between`}>
                             <div>
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-medium ${variation >= 0 ? 'text-green-800' : 'text-red-800'}`}>Desviación Proyectada</h3>
+                                    <h3 className={`font-medium ${variation >= 0 ? 'text-green-800' : 'text-red-800'}`}>{t('eac.variation')}</h3>
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger><Info className={`h-4 w-4 ${variation >= 0 ? 'text-green-800/40' : 'text-red-800/40'}`} /></TooltipTrigger>
-                                            <TooltipContent><p>Diferencia entre Presupuesto y Estimación Final (BAC - EAC). Positivo es ahorro.</p></TooltipContent>
+                                            <TooltipContent><p>{t('eac.variationTooltip')}</p></TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </div>
@@ -319,11 +321,11 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         <div className={`p-4 rounded-lg shadow-sm border ${TCPI <= 1 ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} h-full flex flex-col justify-between`}>
                             <div>
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-medium ${TCPI <= 1 ? 'text-green-800' : 'text-orange-800'}`}>Rendimiento Requerido (TCPI)</h3>
+                                    <h3 className={`font-medium ${TCPI <= 1 ? 'text-green-800' : 'text-orange-800'}`}>{t('eac.tcpi')}</h3>
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger><Info className={`h-4 w-4 ${TCPI <= 1 ? 'text-green-800/40' : 'text-orange-800/40'}`} /></TooltipTrigger>
-                                            <TooltipContent><p>(BAC - EV) / (BAC - AC). Eficiencia necesaria en el trabajo restante para cumplir el presupuesto.</p></TooltipContent>
+                                            <TooltipContent><p>{t('eac.tcpiTooltip')}</p></TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
                                 </div>
@@ -458,7 +460,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
             {/* Chart Placeholder (Visual Representation) */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-primary-dark">Curva de Rendimiento</CardTitle>
+                    <CardTitle className="text-primary-dark">{t('eac.performanceCurve')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="relative h-64 w-full bg-white border-l border-b border-gray-300 p-4">
@@ -545,11 +547,11 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         </div>
                     </div>
                     <div className="flex justify-center gap-6 mt-4 text-xs">
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-gray-400 border-t border-dashed"></div> Presupuesto (BAC)</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 border-t-2 border-dashed border-blue-500"></div> Planificado (PV)</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-red-500"></div> Coste Real (AC)</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-green-500"></div> Valor Ganado (EV)</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 border-t-2 border-dashed border-red-500"></div> Proyección</div>
+                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-gray-400 border-t border-dashed"></div> {t('eac.totalBudget')}</div>
+                        <div className="flex items-center gap-1"><div className="w-3 h-1 border-t-2 border-dashed border-blue-500"></div> {t('eac.planned')}</div>
+                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-red-500"></div> {t('eac.actualCost')}</div>
+                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-green-500"></div> {t('eac.ev')}</div>
+                        <div className="flex items-center gap-1"><div className="w-3 h-1 border-t-2 border-dashed border-red-500"></div> {t('eac.projection')}</div>
                     </div>
                 </CardContent>
             </Card>

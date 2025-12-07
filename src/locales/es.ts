@@ -9,7 +9,11 @@ export const es = {
         confirmDelete: '¿Estás seguro de que quieres eliminar este elemento?',
         active: 'Activo',
         closed: 'Cerrado',
-        language: 'Idioma'
+        language: 'Idioma',
+        user: 'Usuario',
+        demoUser: 'Usuario Demo',
+        activeSession: 'Sesión Activa',
+        saving: 'Guardando...'
     },
     nav: {
         dashboard: 'Panel de Control',
@@ -127,6 +131,38 @@ export const es = {
             billWip: 'Facturar WIP',
             downloadPdf: 'Descargar PDF'
         }
+    },
+    eac: {
+        title: 'Análisis EAC',
+        bac: 'BAC',
+        simulation: 'Simulación',
+        saveSimulation: 'Guardar Simulación',
+        simulationSaved: 'Simulación guardada correctamente.',
+        errorSaving: 'Error al guardar.',
+        inputData: 'Datos de Entrada',
+        adjustProgress: 'Ajusta el avance real para recalcular.',
+        totalBudget: 'Presupuesto Total (BAC)',
+        totalBudgetDesc: 'Budget at Completion. Presupuesto total aprobado para el proyecto.',
+        actualCost: 'Coste Real Actual (AC)',
+        actualCostDesc: 'Actual Cost. Coste real incurrido hasta la fecha.',
+        sumCosts: 'Suma de todos los costes registrados.',
+        physicalProgress: 'Avance Físico Real (%)',
+        physicalProgressTooltip: 'Porcentaje de completitud real del alcance, independiente del coste.',
+        physicalProgressDesc: 'Indica el porcentaje de trabajo realmente completado, independientemente del coste.',
+        financialProjection: 'Proyección Financiera',
+        ev: 'Valor Ganado (EV)',
+        evTooltip: 'Valor presupuestado del trabajo realizado (BAC * % Avance)',
+        eac: 'Estimado a la Conclusión (EAC)',
+        eacTooltip: 'Coste total estimado al finalizar (BAC / CPI).',
+        variation: 'Variación (VAC)',
+        variationTooltip: 'Desviación esperada del presupuesto (BAC - EAC). Positivo es bueno.',
+        cpi: 'Índice Rentabilidad (CPI)',
+        cpiTooltip: 'Eficiencia de costes (EV / AC). > 1.0 es eficiente.',
+        tcpi: 'Eficiencia Requerida (TCPI)',
+        tcpiTooltip: 'Eficiencia necesaria en el resto para cumplir presupuesto.',
+        performanceCurve: 'Curva de Rendimiento',
+        planned: 'Planificado (PV)',
+        projection: 'Proyección'
     }
 };
 
