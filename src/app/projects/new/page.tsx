@@ -6,7 +6,7 @@ import { projectService } from '@/services/projectService';
 import { contractService } from '@/services/contractService';
 import { Project, ProjectType, RevenueMethod, Milestone, Contract } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, Trash2, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Info, HelpCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from 'next/link';
 import {
@@ -309,6 +309,22 @@ export default function NewProjectPage() {
                                     className="mt-1 block w-full rounded-md border border-aux-grey px-3 py-2 shadow-sm focus:border-primary focus:ring-primary focus:outline-none"
                                     step="0.1"
                                 />
+                            </div>
+
+                            {/* Rubric Guide */}
+                            <div className="col-span-2 mt-2">
+                                <Alert className="bg-slate-50 border-slate-200">
+                                    <HelpCircle className="h-4 w-4 text-slate-600" />
+                                    <AlertTitle className="text-slate-800 text-xs font-bold mb-2">¿Cómo determinar la Puntuación Estratégica (0-100)?</AlertTitle>
+                                    <AlertDescription className="text-slate-700 text-xs">
+                                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 list-disc pl-4">
+                                            <li><strong>Alineación (Max 30 pts):</strong> ¿Contribuye directamente a los OKRs/Metas anuales?</li>
+                                            <li><strong>Innovación (Max 30 pts):</strong> ¿Abre nuevos mercados, tecnologías o capacidades?</li>
+                                            <li><strong>Impacto Cliente (Max 20 pts):</strong> ¿Fideliza a un cliente clave o 'Tier 1'?</li>
+                                            <li><strong>Viabilidad (Max 20 pts):</strong> ¿Riesgo técnico/comercial bajo y equipo disponible?</li>
+                                        </ul>
+                                    </AlertDescription>
+                                </Alert>
                             </div>
                         </div>
 
