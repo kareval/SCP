@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import ClientLayout from "@/components/ClientLayout";
+import HelpChat from "@/components/HelpChat";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
             <RoleProvider>
               <div className="flex h-full w-full">
                 <ClientLayout>{children}</ClientLayout>
+                <HelpChat />
               </div>
             </RoleProvider>
           </LanguageProvider>
