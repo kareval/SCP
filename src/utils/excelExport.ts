@@ -40,7 +40,7 @@ export function exportRevenueMatrixToExcel(params: ExportRevenueMatrixParams) {
 
         // Contract row
         let contractRowTotal = 0;
-        const contractRow = [contract.code || contract.title];
+        const contractRow: (string | number)[] = [contract.code || contract.title];
         columns.forEach((col) => {
             const val = getContractRevenueForPeriod(contract.id, col.start, col.end);
             contractRowTotal += val;
@@ -52,7 +52,7 @@ export function exportRevenueMatrixToExcel(params: ExportRevenueMatrixParams) {
         // Project rows under this contract
         contractProjects.forEach(project => {
             let projectRowTotal = 0;
-            const projectRow = [`  ${project.title}`];
+            const projectRow: (string | number)[] = [`  ${project.title}`];
             columns.forEach((col) => {
                 const rev = getRevenueForPeriod(project.id, col.start, col.end);
                 projectRowTotal += rev;
@@ -64,7 +64,7 @@ export function exportRevenueMatrixToExcel(params: ExportRevenueMatrixParams) {
     });
 
     // Totals row
-    const totalRow = ['TOTAL'];
+    const totalRow: (string | number)[] = ['TOTAL'];
     columns.forEach((col) => {
         totalRow.push(getTotalRevenueForPeriod(col.start, col.end));
     });
