@@ -340,7 +340,7 @@ export default function Dashboard() {
         {/* --- FINANCIAL TAB --- */}
         <TabsContent value="financial" className="space-y-6">
           {/* Row 1: KPI Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.kpi.budgetActive')}</CardTitle>
@@ -379,6 +379,33 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold text-primary-dark">{totalBilled.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                 <p className="text-xs text-primary-dark/60 text-right">{Math.max(0, -wipAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} (Anticipos)</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-primary text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-white/80">{t('dashboard.kpi.tcv')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{totalTCV.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                <p className="text-xs text-white/60 mt-1">Cartera total contratada</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-slate-50 border-slate-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.backlog')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-slate-700">{globalBacklog.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                <p className="text-xs text-primary-dark/60 mt-1">Pendiente de ejecutar</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.revenueYear')} {currentDate.getFullYear()}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-primary-dark">{currentYearRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                <p className="text-xs text-primary-dark/60 mt-1">Reconocido este año</p>
               </CardContent>
             </Card>
           </div>
@@ -544,38 +571,7 @@ export default function Dashboard() {
 
         {/* --- STRATEGIC TAB --- */}
         <TabsContent value="strategic" className="space-y-6">
-          {/* Row 1: KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-primary text-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-white/80">{t('dashboard.kpi.tcv')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{totalTCV.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-white/60 mt-1">Cartera total contratada</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-slate-50 border-slate-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.backlog')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-700">{globalBacklog.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60 mt-1">Pendiente de ejecutar</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-primary-dark/60">{t('dashboard.kpi.revenueYear')} {currentDate.getFullYear()}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-primary-dark">{currentYearRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60 mt-1">Reconocido este año</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Row 2: Charts */}
+          {/* Row 1: Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Client Concentration */}
             <Card>
@@ -626,7 +622,7 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Row 3: Strategic Portfolio Matrix */}
+          {/* Row 2: Strategic Portfolio Matrix */}
           <div className="pt-6">
             <h3 className="text-lg font-bold text-primary-dark mb-4">{t('dashboard.strategicPortfolio')}</h3>
             <PortfolioMatrix projects={projects} />
