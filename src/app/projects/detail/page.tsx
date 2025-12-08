@@ -297,7 +297,10 @@ function ProjectDetailsContent() {
     if (!project) return <div className="p-8">Proyecto no encontrado</div>;
 
     // Financial Metrics
-    const totalRevenue = workLogs.reduce((acc, log) => acc + log.amount, 0);
+    const totalRevenue = (project.revenueMethod === 'Output' || project.revenueMethod === 'Input' || project.revenueMethod === 'Linear')
+        ? (project.justifiedAmount || 0)
+        : workLogs.reduce((acc, log) => acc + log.amount, 0);
+
     const totalCost = workLogs.reduce((acc, log) => acc + (log.costAmount || 0), 0);
     const grossMargin = totalRevenue - totalCost;
     const grossMarginPercent = totalRevenue > 0 ? (grossMargin / totalRevenue) * 100 : 0;
@@ -357,7 +360,9 @@ function ProjectDetailsContent() {
                     </CardHeader>
                     <CardContent className="pt-0">
                         <div className="text-xl font-bold text-primary-dark">{totalRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                        {project.revenueMethod === 'Input' && <div className="mt-1 text-xs text-slate-500">{inputProgress.toFixed(0)}% Completado</div>}
+                        {(project.revenueMethod === 'Input' || project.revenueMethod === 'Output' || project.revenueMethod === 'Linear') && project.budget > 0 && (
+                            <div className="mt-1 text-xs text-slate-500">{((totalRevenue / project.budget) * 100).toFixed(0)}% Completado (Financiero)</div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -420,7 +425,41 @@ function ProjectDetailsContent() {
                                 <CardHeader><CardTitle className="text-primary-dark">{project.revenueMethod === 'Output' ? t('projects.detail.activity.milestones') : t('projects.detail.activity.register')}</CardTitle></CardHeader>
                                 <CardContent>
                                     {project.revenueMethod === 'Output' ? (
-                                        <div className="space-y-4">{project.milestones?.map(m => (<div key={m.id} onClick={() => handleToggleMilestone(m)} className={`flex justify-between p-3 border rounded cursor-pointer ${m.completed ? 'bg-teal-50 border-teal-200' : 'bg-white'}`}><span className="font-medium">{m.name}</span>{m.completed ? <CheckSquare className="text-teal-600" /> : <Square className="text-slate-400" />}</div>))}</div>
+                                        <div className="space-y-4">
+                                            {project.milestones?.map(m => {
+                                                const isLate = !m.completed && m.targetDate && new Date(m.targetDate) < new Date();
+                                                const wasLate = m.completed && m.actualDate && m.targetDate && new Date(m.actualDate) > new Date(m.targetDate);
+
+                                                return (
+                                                    <div key={m.id} onClick={() => handleToggleMilestone(m)} className={`flex flex-col p-3 border rounded cursor-pointer transition-colors ${m.completed ? 'bg-teal-50 border-teal-200' : 'bg-white hover:border-primary/50'}`}>
+                                                        <div className="flex justify-between items-center">
+                                                            <span className={`font-medium ${m.completed ? 'text-teal-900' : 'text-slate-700'}`}>{m.name}</span>
+                                                            {m.completed ? <CheckSquare className="text-teal-600 h-5 w-5" /> : <Square className="text-slate-400 h-5 w-5" />}
+                                                        </div>
+                                                        <div className="flex justify-between items-center mt-2 text-xs">
+                                                            <span className="text-slate-500">
+                                                                Meta: {m.targetDate ? new Date(m.targetDate).toLocaleDateString() : 'N/A'}
+                                                            </span>
+                                                            {isLate && (
+                                                                <span className="flex items-center text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded">
+                                                                    <AlertTriangle className="h-3 w-3 mr-1" /> Retrasado
+                                                                </span>
+                                                            )}
+                                                            {wasLate && (
+                                                                <span className="text-orange-600 font-medium">
+                                                                    Completado con retraso
+                                                                </span>
+                                                            )}
+                                                            {m.completed && !wasLate && (
+                                                                <span className="text-teal-600">
+                                                                    {new Date(m.actualDate!).toLocaleDateString()}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     ) : (
                                         <form onSubmit={handleAddWorkLog} className="space-y-4">
                                             <div>
