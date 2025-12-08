@@ -15,7 +15,13 @@ export const es = {
         activeSession: 'Sesión Activa',
         saving: 'Guardando...',
         select: 'Seleccionar...',
-        title: 'Título'
+        title: 'Título',
+        monthly: 'Mensual',
+        quarterly: 'Trimestral',
+        yearly: 'Anual',
+        reset: 'Reset',
+        all: 'Todo',
+        perMonth: 'Por Mes'
     },
     nav: {
         dashboard: 'Panel de Control',
@@ -31,6 +37,17 @@ export const es = {
         efficiency: 'Eficiencia Operativa (Justificado vs Presupuesto)',
         clientConcentration: 'Concentración por Cliente (TCV)',
         strategicRadar: 'Radar de Puntuación Estratégica',
+        subtitle: 'KPIs Financieros y Análisis Estratégico',
+        exportMatrix: 'Exportar (Matriz)',
+        internalProjects: {
+            title: 'Proyectos Internos',
+            disclaimer: '* No incluido en métricas de revenue de producción',
+            totalHours: 'Total Horas',
+            totalCost: 'Coste Total'
+        },
+        revenueMatrix: {
+            title: 'Matriz de Revenue'
+        },
         kpi: {
             budgetActive: 'Presupuesto Activo',
             justified: 'Justificado',
@@ -38,7 +55,24 @@ export const es = {
             wip: 'WIP (Pendiente)',
             tcv: 'Valor Total Contratos',
             backlog: 'Backlog Global',
-            revenueYear: 'Revenue Anual'
+            revenueYear: 'Revenue Anual',
+            activeProjects: 'En proyectos en curso',
+            productionDone: 'Producción realizada',
+            risk: 'Riesgo de no cobro',
+            advances: 'Anticipos',
+            totalContracted: 'Cartera total contratada',
+            toExecute: 'Pendiente de ejecutar',
+            recognized: 'Reconocido este año'
+        },
+        billingTrendSubtitle: 'Facturación mensual últimos 6 meses',
+        efficiencySubtitle: 'Progreso de Justificación vs Presupuesto Total',
+        executed: 'Ejecutado',
+        clientConcentrationSubtitle: 'Valor de Cartera (TCV) por Cliente',
+        strategicRadarSubtitle: 'Media de puntuación por criterio',
+        averageScore: 'Puntuación Media',
+        table: {
+            contractProject: 'Contrato / Proyecto',
+            total: 'Total'
         }
     },
     projects: {
@@ -83,6 +117,29 @@ export const es = {
                 innovation: 'Innovación y Mercado',
                 customerImpact: 'Impacto Cliente (Tier 1)',
                 viability: 'Viabilidad y Riesgo'
+            }
+        },
+        detail: {
+            tabs: {
+                activity: 'Actividad y Progreso',
+                billing: 'Facturación',
+                eac: 'Análisis EAC',
+                strategic: 'Visión Estratégica',
+                details: 'Detalles del Proyecto'
+            },
+            activity: {
+                register: 'Registrar Actividad',
+                milestones: 'Hitos del Proyecto',
+                date: 'Fecha',
+                concept: 'Concepto',
+                hours: 'Horas',
+                costIncurred: 'Coste Incurrido (€)',
+                revenueAmount: 'Importe Revenue (€)',
+                history: 'Historial de Actividad',
+                noActivity: 'No hay actividad registrada',
+                thisMonth: 'en este mes',
+                totalMonth: 'Total Mes',
+                submit: 'Registrar'
             }
         }
     },

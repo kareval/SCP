@@ -31,7 +31,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   // Control Center State
-  const [viewMode, setViewMode] = useState<'Monthly' | 'Quarterly' | 'Yearly'>('Monthly');
+  const [viewMode, setViewMode] = useState<'Monthly' | 'Quarterly' | 'Yearly'>('Monthly'); // Controls Revenue Matrix
+  const [chartViewMode, setChartViewMode] = useState<'Monthly' | 'Quarterly' | 'Yearly'>('Monthly'); // Controls Billing Chart
   const [currentDate, setCurrentDate] = useState(new Date());
   const [expandedContracts, setExpandedContracts] = useState<Set<string>>(new Set());
 
@@ -71,45 +72,65 @@ export default function Dashboard() {
 
   // --- Chart Data Preparation ---
 
-  // 1. Billing Trend (Last 6 Months)
+  // 1. Billing Trend (Dynamic based on ChartViewMode)
   const billingTrendData = useMemo(() => {
     const data = [];
-    const today = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const monthLabel = d.toLocaleString('es-ES', { month: 'short' });
+    const year = currentDate.getFullYear();
 
-      // Sum invoices for this month
-      const totalInfo = invoices
-        .filter(inv => {
-          const invDate = new Date(inv.date);
-          return invDate.getMonth() === d.getMonth() && invDate.getFullYear() === d.getFullYear();
-        })
-        .reduce((acc, inv) => acc + inv.baseAmount, 0);
-
-      data.push({ name: monthLabel, amount: totalInfo });
+    if (chartViewMode === 'Monthly') {
+      // Show 12 months of selected year
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(year, i, 1);
+        const monthLabel = d.toLocaleString('es-ES', { month: 'short' });
+        // Sum invoices for this month
+        const totalInfo = invoices
+          .filter(inv => {
+            const invDate = new Date(inv.date);
+            return invDate.getMonth() === i && invDate.getFullYear() === year;
+          })
+          .reduce((acc, inv) => acc + inv.baseAmount, 0);
+        data.push({ name: monthLabel, amount: totalInfo });
+      }
+    } else if (chartViewMode === 'Quarterly') {
+      // Show 4 quarters
+      for (let i = 0; i < 4; i++) {
+        const startMonth = i * 3;
+        const endMonth = startMonth + 2;
+        const totalInfo = invoices
+          .filter(inv => {
+            const invDate = new Date(inv.date);
+            return invDate.getMonth() >= startMonth && invDate.getMonth() <= endMonth && invDate.getFullYear() === year;
+          })
+          .reduce((acc, inv) => acc + inv.baseAmount, 0);
+        data.push({ name: `Q${i + 1}`, amount: totalInfo });
+      }
+    } else {
+      // Yearly: Show 5 years centered on currentDate
+      for (let i = -2; i <= 2; i++) {
+        const y = year + i;
+        const totalInfo = invoices
+          .filter(inv => new Date(inv.date).getFullYear() === y)
+          .reduce((acc, inv) => acc + inv.baseAmount, 0);
+        data.push({ name: y.toString(), amount: totalInfo });
+      }
     }
     return data;
-  }, [invoices]);
+  }, [invoices, chartViewMode, currentDate]);
 
-  // 2. Client Concentration (by TCV)
-  // We need Client Names. For now, we'll group by clientId and label as "Client X" if name not available in Contract directly (Contract has clientId). 
-  // In a real app we would join with Client data. We will map clientId to a nice name if possible or use ID.
+  // 2. Client Concentration (by TCV) - Remains Lifecycle
   const clientConcentrationData = useMemo(() => {
     const clientMap: Record<string, number> = {};
     contracts.forEach(c => {
-      // Ideally fetch client name, for now use ID or a mock lookup if we had it. 
-      // Let's assume we want to show distribution.
       const val = clientMap[c.clientId] || 0;
       clientMap[c.clientId] = val + c.tcv;
     });
     return Object.keys(clientMap).map(clientId => ({
-      name: clientId, // Would be nice to have name
+      name: clientId,
       value: clientMap[clientId]
     }));
   }, [contracts]);
 
-  // 3. Strategic Radar (Average Scores)
+  // 3. Strategic Radar (Average Scores) - Remains Lifecycle
   const strategicRadarData = useMemo(() => {
     let totalAlign = 0, totalInnov = 0, totalImpact = 0, totalViab = 0;
     let count = 0;
@@ -273,11 +294,18 @@ export default function Dashboard() {
   const productionProjects = projects.filter(p => p.type !== 'Internal');
   const internalProjects = projects.filter(p => p.type === 'Internal');
 
-  // Financial KPIs (PRODUCTION ONLY - excluding Internal projects)
+  // Helper for Internal Projects to still respect Dashboard Range if we want?
+  // The user said "figures don't vary... leave it as it was".
+  // Before, internal projects were calculated on 'allLogs'? Or filtered?
+  // Let's rely on standard lifecycle for everything top level.
+  // For Internal projects, let's keep them total lifecycle to match.
+  const allWorkLogs = workLogs;
+
+  // Financial KPIs (PRODUCTION ONLY - Lifecycle)
   const totalBudget = productionProjects.reduce((acc, p) => acc + p.budget, 0);
   const totalJustified = productionProjects.reduce((acc, p) => acc + p.justifiedAmount, 0);
   const totalBilled = invoices.reduce((acc, i) => acc + i.baseAmount, 0);
-  const wipAmount = totalJustified - totalBilled; // Can be negative if billed > justified (Deferred)
+  const wipAmount = totalJustified - totalBilled;
 
   const efficiencyRatio = totalBudget > 0 ? (totalJustified / totalBudget) * 100 : 0;
   const efficiencyData = [
@@ -285,26 +313,24 @@ export default function Dashboard() {
     { name: 'Restante', value: Math.max(0, totalBudget - totalJustified) }
   ];
 
-  // Strategic (from Control Center)
+  // Strategic (Lifecycle)
   const totalTCV = contracts.reduce((acc, c) => acc + c.tcv, 0);
-  const globalBacklog = totalTCV - productionProjects.reduce((acc, p) => {
-    // Note: This matches the old logic but ideally we check billed or justified vs TCV. 
-    // Assuming Backlog = TCV - Justified for simplicity or WorkLogs sum.
-    // Using WorkLogs sum from previous implementation:
-    return acc + workLogs.filter(l => l.projectId === p.id).reduce((sum, l) => sum + l.amount, 0);
-  }, 0);
+  const globalBacklog = totalTCV - totalJustified; // Approximate using lifecycle justified
 
+  // "Note: Revenue Year is typically current year revenue."
+  // As we are reverting to "old specific" behavior for KPIs, let's check what 'Revenue Year' was.
+  // In the previous code (Step 3313 view), it was:
   const currentYearRevenue = productionProjects.reduce((acc, p) => {
     const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
     const endOfYear = new Date(currentDate.getFullYear(), 11, 31);
     return acc + getRevenueForPeriod(p.id, startOfYear, endOfYear);
   }, 0);
 
-  // Internal Projects Metrics (for tracking purposes)
+  // Internal Projects Metrics (Lifecycle)
   const internalTotalCost = internalProjects.reduce((acc, p) => {
-    return acc + workLogs.filter(l => l.projectId === p.id).reduce((sum, l) => sum + l.amount, 0);
+    return acc + allWorkLogs.filter(l => l.projectId === p.id).reduce((sum, l) => sum + l.amount, 0);
   }, 0);
-  const internalTotalHours = workLogs
+  const internalTotalHours = allWorkLogs
     .filter(l => internalProjects.some(p => p.id === l.projectId) && l.hours)
     .reduce((acc, l) => acc + (l.hours || 0), 0);
 
@@ -320,12 +346,14 @@ export default function Dashboard() {
     }
   });
 
+
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-primary-dark">{t('nav.dashboard')}</h1>
-          <p className="text-primary-dark/60">KPIs Financieros y Análisis Estratégico</p>
+          <p className="text-primary-dark/60">{t('dashboard.subtitle')}</p>
         </div>
 
         {/* Global Controls */}
@@ -336,11 +364,6 @@ export default function Dashboard() {
             <span className="text-sm font-bold text-primary-dark w-16 text-center">{currentDate.getFullYear()}</span>
             <button onClick={() => { const d = new Date(currentDate); d.setFullYear(d.getFullYear() + 1); setCurrentDate(d); }} className="p-1 hover:bg-aux-grey/10 rounded-full"><ChevronRight className="h-4 w-4" /></button>
           </div>
-
-          <button onClick={handleExportPDF} className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">
-            <Download className="h-4 w-4" />
-            Exportar (Matriz)
-          </button>
         </div>
       </div>
 
@@ -361,7 +384,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-primary-dark">{totalBudget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60">En proyectos en curso</p>
+                <p className="text-xs text-primary-dark/60">{t('dashboard.kpi.totalContracted')}</p>
               </CardContent>
             </Card>
             <Card>
@@ -371,7 +394,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-primary-dark">{totalJustified.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60">Producción realizada</p>
+                <p className="text-xs text-primary-dark/60">{t('dashboard.kpi.productionDone')}</p>
               </CardContent>
             </Card>
             <Card>
@@ -381,7 +404,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-aux-red">{Math.max(0, wipAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60">Riesgo de no cobro</p>
+                <p className="text-xs text-primary-dark/60">{t('dashboard.kpi.risk')}</p>
               </CardContent>
             </Card>
             <Card>
@@ -391,7 +414,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-primary-dark">{totalBilled.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60 text-right">{Math.max(0, -wipAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} (Anticipos)</p>
+                <p className="text-xs text-primary-dark/60 text-right">{Math.max(0, -wipAmount).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} ({t('dashboard.kpi.advances')})</p>
               </CardContent>
             </Card>
           </div>
@@ -404,7 +427,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold">{totalTCV.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-white/60 mt-1">Cartera total contratada</p>
+                <p className="text-xs text-white/60 mt-1">{t('dashboard.kpi.totalContracted')}</p>
               </CardContent>
             </Card>
             <Card className="bg-slate-50 border-slate-200">
@@ -413,7 +436,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-slate-700">{globalBacklog.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60 mt-1">Pendiente de ejecutar</p>
+                <p className="text-xs text-primary-dark/60 mt-1">{t('dashboard.kpi.toExecute')}</p>
               </CardContent>
             </Card>
             <Card>
@@ -422,18 +445,18 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-primary-dark">{currentYearRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                <p className="text-xs text-primary-dark/60 mt-1">Reconocido este año</p>
+                <p className="text-xs text-primary-dark/60 mt-1">{t('dashboard.kpi.recognized')}</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Internal Projects - Only show if there are internal projects */}
+          {/* Internal Projects */}
           {internalProjects.length > 0 && (
             <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-gray-700">
-                    Proyectos Internos ({internalProjects.length})
+                    {t('dashboard.internalProjects.title')} ({internalProjects.length})
                   </CardTitle>
                   <Activity className="h-4 w-4 text-gray-500" />
                 </div>
@@ -441,20 +464,20 @@ export default function Dashboard() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-gray-600">Coste Total</p>
+                    <p className="text-xs text-gray-600">{t('dashboard.internalProjects.totalCost')}</p>
                     <p className="text-2xl font-bold text-gray-800">
                       {internalTotalCost.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600">Total Horas</p>
+                    <p className="text-xs text-gray-600">{t('dashboard.internalProjects.totalHours')}</p>
                     <p className="text-2xl font-bold text-gray-800">
                       {internalTotalHours.toFixed(1)}h
                     </p>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2 italic">
-                  * No incluido en métricas de revenue de producción
+                  {t('dashboard.internalProjects.disclaimer')}
                 </p>
               </CardContent>
             </Card>
@@ -464,9 +487,25 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Billing Trend */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.billingTrend')}</CardTitle>
-                <CardDescription>Facturación mensual últimos 6 meses</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.billingTrend')}</CardTitle>
+                  <CardDescription>
+                    {chartViewMode === 'Yearly' ? 'Evolución Anual' : chartViewMode === 'Quarterly' ? `Trimestral ${currentDate.getFullYear()}` : `Mensual ${currentDate.getFullYear()}`}
+                  </CardDescription>
+                </div>
+                {/* Independent Chart Controls */}
+                <div className="flex bg-gray-100 rounded-md p-1 scale-90 origin-right">
+                  {(['Monthly', 'Quarterly', 'Yearly'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => setChartViewMode(mode)}
+                      className={`px-2 py-1 text-[10px] font-medium rounded-sm transition-colors ${chartViewMode === mode ? 'bg-white shadow-sm text-primary' : 'text-gray-500 hover:text-primary'}`}
+                    >
+                      {mode === 'Monthly' ? t('common.monthly') : mode === 'Quarterly' ? t('common.quarterly') : t('common.yearly')}
+                    </button>
+                  ))}
+                </div>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -474,7 +513,7 @@ export default function Dashboard() {
                     <XAxis dataKey="name" fontSize={12} />
                     <YAxis fontSize={12} tickFormatter={(val) => `€${val / 1000}k`} />
                     <Tooltip formatter={(val: number) => val.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} />
-                    <Bar dataKey="amount" fill="#002e67" radius={[4, 4, 0, 0]} name="Facturado" />
+                    <Bar dataKey="amount" fill="#002e67" radius={[4, 4, 0, 0]} name={t('dashboard.kpi.billed')} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -484,7 +523,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.efficiency')}</CardTitle>
-                <CardDescription>Progreso de Justificación vs Presupuesto Total</CardDescription>
+                <CardDescription>{t('dashboard.efficiencySubtitle')}</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px] flex flex-col items-center justify-center relative">
                 {/* Using Pie to simulate Gauge */}
@@ -509,18 +548,19 @@ export default function Dashboard() {
                 </ResponsiveContainer>
                 <div className="absolute bottom-10 flex flex-col items-center">
                   <span className="text-4xl font-bold text-primary-dark">{efficiencyRatio.toFixed(1)}%</span>
-                  <span className="text-sm text-gray-500">Ejecutado</span>
+                  <span className="text-sm text-gray-500">{t('dashboard.executed')}</span>
                 </div>
               </CardContent>
             </Card>
           </div>
 
 
-          {/* Row 3: Revenue Matrix */}
+          {/* Row 4: Revenue Matrix */}
           <Card className="overflow-hidden shadow-lg border-aux-grey/30">
             <CardHeader className="bg-gray-50/50 border-b border-gray-100 flex flex-row items-center justify-between">
-              <CardTitle className="text-primary-dark">Matriz de Revenue</CardTitle>
+              <CardTitle className="text-primary-dark">{t('dashboard.revenueMatrix.title')}</CardTitle>
               <div className="flex items-center gap-3">
+                {/* Reverting View Mode Controls to Matrix Header */}
                 <div className="flex items-center gap-2">
                   {(['Monthly', 'Quarterly', 'Yearly'] as const).map(mode => (
                     <button
@@ -528,7 +568,7 @@ export default function Dashboard() {
                       onClick={() => setViewMode(mode)}
                       className={`px-3 py-1 text-xs font-medium rounded-sm transition-colors ${viewMode === mode ? 'bg-primary text-white' : 'text-primary-dark hover:bg-aux-grey/10'}`}
                     >
-                      {mode === 'Monthly' ? 'Mensual' : mode === 'Quarterly' ? 'Trimestral' : 'Anual'}
+                      {mode === 'Monthly' ? t('common.monthly') : mode === 'Quarterly' ? t('common.quarterly') : t('common.yearly')}
                     </button>
                   ))}
                 </div>
@@ -551,15 +591,16 @@ export default function Dashboard() {
                 </button>
               </div>
             </CardHeader>
+
             <CardContent className="overflow-x-auto p-0">
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-primary-dark uppercase bg-aux-grey/10">
                   <tr>
-                    <th className="px-4 py-4 w-80 font-bold border-b border-gray-200">Contrato / Proyecto</th>
+                    <th className="px-4 py-4 w-80 font-bold border-b border-gray-200">{t('dashboard.table.contractProject')}</th>
                     {columns.map((col, i) => (
                       <th key={i} className="px-2 py-4 text-right border-b border-gray-200 font-semibold">{col.label}</th>
                     ))}
-                    <th className="px-4 py-4 text-right font-bold border-b border-gray-200 bg-gray-50">Total</th>
+                    <th className="px-4 py-4 text-right font-bold border-b border-gray-200 bg-gray-50">{t('dashboard.table.total')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -622,7 +663,7 @@ export default function Dashboard() {
 
                   {/* Grand Totals */}
                   <tr className="bg-primary-dark text-white font-bold text-sm">
-                    <td className="px-4 py-4">TOTAL</td>
+                    <td className="px-4 py-4">{t('dashboard.table.total').toUpperCase()}</td>
                     {columns.map((col, index) => (
                       <td key={index} className="px-2 py-4 text-right text-white">
                         {getTotalRevenueForPeriod(col.start, col.end).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -646,7 +687,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.clientConcentration')}</CardTitle>
-                <CardDescription>Valor de Cartera (TCV) por Cliente</CardDescription>
+                <CardDescription>{t('dashboard.clientConcentrationSubtitle')}</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -675,7 +716,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-primary-dark">{t('dashboard.strategicRadar')}</CardTitle>
-                <CardDescription>Media de puntuación por criterio</CardDescription>
+                <CardDescription>{t('dashboard.strategicRadarSubtitle')}</CardDescription>
               </CardHeader>
               <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -683,7 +724,7 @@ export default function Dashboard() {
                     <PolarGrid />
                     <PolarAngleAxis dataKey="subject" />
                     <PolarRadiusAxis />
-                    <Radar name="Puntuación Media" dataKey="A" stroke="#be0036" fill="#be0036" fillOpacity={0.6} />
+                    <Radar name={t('dashboard.averageScore')} dataKey="A" stroke="#be0036" fill="#be0036" fillOpacity={0.6} />
                     <Tooltip />
                   </RadarChart>
                 </ResponsiveContainer>

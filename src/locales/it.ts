@@ -15,7 +15,13 @@ export const it = {
         activeSession: 'Sessione Attiva',
         saving: 'Salvataggio...',
         select: 'Seleziona...',
-        title: 'Titolo'
+        title: 'Titolo',
+        monthly: 'Mensile',
+        quarterly: 'Trimestrale',
+        yearly: 'Annuale',
+        reset: 'Reset',
+        all: 'Tutto',
+        perMonth: 'Per Mese'
     },
     nav: {
         dashboard: 'Dashboard',
@@ -31,6 +37,17 @@ export const it = {
         efficiency: 'Efficienza Operativa (Giustificato vs. Budget)',
         clientConcentration: 'Concentrazione Clienti (TCV)',
         strategicRadar: 'Radar Punteggio Strategico',
+        subtitle: 'KPI Finanziari e Analisi Strategica',
+        exportMatrix: 'Esporta (Matrice)',
+        internalProjects: {
+            title: 'Progetti Interni',
+            disclaimer: '* Non incluso nelle metriche di revenue di produzione',
+            totalHours: 'Ore Totali',
+            totalCost: 'Costo Totale'
+        },
+        revenueMatrix: {
+            title: 'Matrice di Revenue'
+        },
         kpi: {
             budgetActive: 'Budget Attivo',
             justified: 'Giustificato',
@@ -38,7 +55,24 @@ export const it = {
             wip: 'WIP (In Corso)',
             tcv: 'Valore Totale Contratti',
             backlog: 'Backlog Globale',
-            revenueYear: 'Revenue Annuale'
+            revenueYear: 'Revenue Annuale',
+            activeProjects: 'In progetti attivi',
+            productionDone: 'Produzione realizzata',
+            risk: 'Rischio di mancato pagamento',
+            advances: 'Anticipi',
+            totalContracted: 'Portafoglio totale contrattato',
+            toExecute: 'In attesa di esecuzione',
+            recognized: 'Riconosciuto quest\'anno'
+        },
+        billingTrendSubtitle: 'Fatturazione mensile ultimi 6 mesi',
+        efficiencySubtitle: 'Avanzamento Giustificazione vs Budget Totale',
+        executed: 'Eseguito',
+        clientConcentrationSubtitle: 'Valore del Portafoglio (TCV) per Cliente',
+        strategicRadarSubtitle: 'Punteggio medio per criterio',
+        averageScore: 'Punteggio Medio',
+        table: {
+            contractProject: 'Contratto / Progetto',
+            total: 'Totale'
         }
     },
     projects: {
@@ -83,6 +117,29 @@ export const it = {
                 innovation: 'Innovazione e Mercato',
                 customerImpact: 'Impatto Cliente (Tier 1)',
                 viability: 'Fattibilità e Rischio'
+            }
+        },
+        detail: {
+            tabs: {
+                activity: 'Attività e Progresso',
+                billing: 'Fatturazione',
+                eac: 'Analisi EAC',
+                strategic: 'Visione Strategica',
+                details: 'Dettagli del Progetto'
+            },
+            activity: {
+                register: 'Registra Attività',
+                milestones: 'Pietre Miliari (Milestones)',
+                date: 'Data',
+                concept: 'Concetto',
+                hours: 'Ore',
+                costIncurred: 'Costo Sostenuto (€)',
+                revenueAmount: 'Importo Revenue (€)',
+                history: 'Cronologia Attività',
+                noActivity: 'Nessuna attività registrata',
+                thisMonth: 'in questo mese',
+                totalMonth: 'Totale Mese',
+                submit: 'Registra'
             }
         }
     },

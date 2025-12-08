@@ -17,7 +17,13 @@ export const en: LocaleKeys = {
         activeSession: 'Active Session',
         saving: 'Saving...',
         select: 'Select...',
-        title: 'Title'
+        title: 'Title',
+        monthly: 'Monthly',
+        quarterly: 'Quarterly',
+        yearly: 'Yearly',
+        reset: 'Reset',
+        all: 'All',
+        perMonth: 'Per Month'
     },
     nav: {
         dashboard: 'Dashboard',
@@ -33,6 +39,17 @@ export const en: LocaleKeys = {
         efficiency: 'Operational Efficiency (Justified vs Budget)',
         clientConcentration: 'Client Concentration (TCV)',
         strategicRadar: 'Strategic Score Radar',
+        subtitle: 'Financial KPIs and Strategic Analysis',
+        exportMatrix: 'Export (Matrix)',
+        internalProjects: {
+            title: 'Internal Projects',
+            disclaimer: '* Not included in production revenue metrics',
+            totalHours: 'Total Hours',
+            totalCost: 'Total Cost'
+        },
+        revenueMatrix: {
+            title: 'Revenue Matrix'
+        },
         kpi: {
             budgetActive: 'Active Budget',
             justified: 'Justified',
@@ -40,7 +57,24 @@ export const en: LocaleKeys = {
             wip: 'WIP (Pending)',
             tcv: 'Total Contract Value',
             backlog: 'Global Backlog',
-            revenueYear: 'Annual Revenue'
+            revenueYear: 'Annual Revenue',
+            activeProjects: 'In active projects',
+            productionDone: 'Production done',
+            risk: 'Risk of non-payment',
+            advances: 'Down payments',
+            totalContracted: 'Total Contracted Portfolio',
+            toExecute: 'Pending execution',
+            recognized: 'Recognized this year'
+        },
+        billingTrendSubtitle: 'Monthly billing last 6 months',
+        efficiencySubtitle: 'Justification progress vs Total Budget',
+        executed: 'Executed',
+        clientConcentrationSubtitle: 'Portfolio Value (TCV) by Client',
+        strategicRadarSubtitle: 'Average score by criteria',
+        averageScore: 'Average Score',
+        table: {
+            contractProject: 'Contract / Project',
+            total: 'Total'
         }
     },
     projects: {
@@ -85,6 +119,29 @@ export const en: LocaleKeys = {
                 innovation: 'Innovation & Market',
                 customerImpact: 'Customer Impact (Tier 1)',
                 viability: 'Viability & Risk'
+            }
+        },
+        detail: {
+            tabs: {
+                activity: 'Activity & Progress',
+                billing: 'Billing',
+                eac: 'EAC Analysis',
+                strategic: 'Strategic Vision',
+                details: 'Project Details'
+            },
+            activity: {
+                register: 'Log Activity',
+                milestones: 'Project Milestones',
+                date: 'Date',
+                concept: 'Concept',
+                hours: 'Hours',
+                costIncurred: 'Incurred Cost (€)',
+                revenueAmount: 'Revenue Amount (€)',
+                history: 'Activity History',
+                noActivity: 'No activity registered',
+                thisMonth: 'this month',
+                totalMonth: 'Month Total',
+                submit: 'Register'
             }
         }
     },

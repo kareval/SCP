@@ -25,6 +25,7 @@ import {
 import { useRole } from '@/context/RoleContext';
 import { calculateProjectRevenue } from '@/utils/calculations';
 import EACDashboard from '@/components/EACDashboard';
+import { useTranslation } from '@/context/LanguageContext';
 
 // Simple Gauge Component for Margin
 const MarginGauge = ({ value }: { value: number }) => {
@@ -87,6 +88,7 @@ const MarginGauge = ({ value }: { value: number }) => {
 function ProjectDetailsContent() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id');
+    const { t } = useTranslation();
     const { role } = useRole();
     const [project, setProject] = useState<Project | null>(null);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -465,7 +467,7 @@ function ProjectDetailsContent() {
                             : 'border-transparent text-primary-dark/60 hover:text-primary-dark hover:border-aux-grey'
                             }`}
                     >
-                        Actividad y Progreso
+                        {t('projects.detail.tabs.activity')}
                     </button>
                     <button
                         onClick={() => setActiveTab('billing')}
@@ -474,7 +476,7 @@ function ProjectDetailsContent() {
                             : 'border-transparent text-primary-dark/60 hover:text-primary-dark hover:border-aux-grey'
                             }`}
                     >
-                        Facturación
+                        {t('projects.detail.tabs.billing')}
                     </button>
                     <button
                         onClick={() => setActiveTab('eac')}
@@ -483,7 +485,7 @@ function ProjectDetailsContent() {
                             : 'border-transparent text-primary-dark/60 hover:text-primary-dark hover:border-aux-grey'
                             }`}
                     >
-                        Análisis EAC
+                        {t('projects.detail.tabs.eac')}
                     </button>
                     <button
                         onClick={() => setActiveTab('strategic')}
@@ -492,7 +494,7 @@ function ProjectDetailsContent() {
                             : 'border-transparent text-primary-dark/60 hover:text-primary-dark hover:border-aux-grey'
                             }`}
                     >
-                        Visión Estratégica
+                        {t('projects.detail.tabs.strategic')}
                     </button>
                     <button
                         onClick={() => setActiveTab('details')}
@@ -501,7 +503,7 @@ function ProjectDetailsContent() {
                             : 'border-transparent text-primary-dark/60 hover:text-primary-dark hover:border-aux-grey'
                             }`}
                     >
-                        Detalles del Proyecto
+                        {t('projects.detail.tabs.details')}
                     </button>
                 </nav>
             </div>
@@ -515,7 +517,7 @@ function ProjectDetailsContent() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-primary-dark">
-                                        {project.revenueMethod === 'Output' ? 'Hitos del Proyecto' : 'Registrar Actividad'}
+                                        {project.revenueMethod === 'Output' ? t('projects.detail.activity.milestones') : t('projects.detail.activity.register')}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -615,7 +617,7 @@ function ProjectDetailsContent() {
                                     ) : (
                                         <form onSubmit={handleAddWorkLog} className="space-y-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-primary-dark">Fecha</label>
+                                                <label className="block text-sm font-medium text-primary-dark">{t('projects.detail.activity.date')}</label>
                                                 <div className="relative">
                                                     <input
                                                         type="date"
@@ -628,7 +630,7 @@ function ProjectDetailsContent() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-primary-dark">Concepto</label>
+                                                <label className="block text-sm font-medium text-primary-dark">{t('projects.detail.activity.concept')}</label>
                                                 <input
                                                     type="text"
                                                     value={logConcept}
@@ -640,7 +642,7 @@ function ProjectDetailsContent() {
                                             </div>
                                             {project.type === 'TM' && (
                                                 <div>
-                                                    <label className="block text-sm font-medium text-primary-dark">Horas</label>
+                                                    <label className="block text-sm font-medium text-primary-dark">{t('projects.detail.activity.hours')}</label>
                                                     <input
                                                         type="number"
                                                         value={logHours}
@@ -663,7 +665,7 @@ function ProjectDetailsContent() {
                                             )}
                                             <div>
                                                 <label className="block text-sm font-medium text-primary-dark">
-                                                    {project.revenueMethod === 'Input' ? 'Coste Incurrido (€)' : 'Importe Revenue (€)'}
+                                                    {project.revenueMethod === 'Input' ? t('projects.detail.activity.costIncurred') : t('projects.detail.activity.revenueAmount')}
                                                 </label>
                                                 <input
                                                     type="number"
@@ -684,7 +686,7 @@ function ProjectDetailsContent() {
                                                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-aux-red focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                                             >
                                                 <Plus className="mr-2 h-4 w-4" />
-                                                Registrar
+                                                {t('projects.detail.activity.submit')}
                                             </button>
                                         </form>
                                     )}
@@ -709,7 +711,7 @@ function ProjectDetailsContent() {
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-primary-dark">Historial de Actividad</CardTitle>
+                                <CardTitle className="text-primary-dark">{t('projects.detail.activity.history')}</CardTitle>
                                 <div className="flex items-center space-x-2 bg-aux-grey/10 p-1 rounded-md">
                                     <button
                                         onClick={() => setFilterType('all')}
@@ -718,7 +720,7 @@ function ProjectDetailsContent() {
                                             : 'text-primary-dark/60 hover:text-primary-dark'
                                             }`}
                                     >
-                                        Todo
+                                        {t('common.all')}
                                     </button>
                                     <button
                                         onClick={() => setFilterType('month')}
@@ -727,7 +729,7 @@ function ProjectDetailsContent() {
                                             : 'text-primary-dark/60 hover:text-primary-dark'
                                             }`}
                                     >
-                                        Por Mes
+                                        {t('common.perMonth')}
                                     </button>
                                 </div>
                             </CardHeader>
@@ -763,9 +765,9 @@ function ProjectDetailsContent() {
                                 <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                                     {filteredLogs.length === 0 ? (
                                         <div className="text-center py-8">
-                                            <p className="text-primary-dark/40 mb-1">No hay actividad registrada</p>
+                                            <p className="text-primary-dark/40 mb-1">{t('projects.detail.activity.noActivity')}</p>
                                             {filterType === 'month' && (
-                                                <p className="text-xs text-primary-dark/30">en este mes</p>
+                                                <p className="text-xs text-primary-dark/30">{t('projects.detail.activity.thisMonth')}</p>
                                             )}
                                         </div>
                                     ) : (
