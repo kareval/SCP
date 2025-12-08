@@ -147,6 +147,15 @@ export const es = {
                 thisMonth: 'en este mes',
                 totalMonth: 'Total Mes',
                 submit: 'Registrar'
+            },
+            cards: {
+                tooltips: {
+                    budget: 'Presupuesto total aprobado (BAC). Incluye reservas de contingencia si están definidas.',
+                    revenue: 'Ingreso devengado "Earned Value" basado en el avance (Hitos, Coste o Lineal).',
+                    margin: 'Margen Bruto Real (Revenue - Costes Directos). Indica la rentabilidad operativa actual.',
+                    billed: 'Importe total facurado al cliente hasta la fecha (incluyendo anticipos).',
+                    backlog: 'Ingreso pendiente de reconocer (Presupuesto - Revenue). Trabajo futuro asegurado.'
+                }
             }
         }
     },

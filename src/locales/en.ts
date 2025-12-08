@@ -149,6 +149,15 @@ export const en: LocaleKeys = {
                 thisMonth: 'this month',
                 totalMonth: 'Month Total',
                 submit: 'Register'
+            },
+            cards: {
+                tooltips: {
+                    budget: 'Total approved budget (BAC). Includes contingency reserves if defined.',
+                    revenue: 'Earned Revenue based on actual progress (Milestones, Cost, or Linear).',
+                    margin: 'Real Gross Margin (Revenue - Direct Costs). Indicates current operational profitability.',
+                    billed: 'Total amount billed to client to date (including advances).',
+                    backlog: 'Revenue pending recognition (Budget - Revenue). Secured future work.'
+                }
             }
         }
     },

@@ -334,78 +334,120 @@ function ProjectDetailsContent() {
             </div>
 
             {/* Financial Health Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-                {/* Presupuesto */}
-                <Card>
-                    <CardHeader className="pb-1">
-                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">Presupuesto</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="text-xl font-bold text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                        {project.originalBaseline && project.originalBaseline.budget !== project.budget && (
-                            <div className="mt-1 text-xs text-slate-400">Base: <span className="line-through">{project.originalBaseline.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span></div>
-                        )}
-                        {project.contingencyReserve && project.contingencyReserve > 0 && (
-                            <div className="text-xs text-amber-600 mt-1 font-medium">
-                                Incluye Reserva: {(project.budget * (project.contingencyReserve / 100)).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} ({project.contingencyReserve}%)
+            <TooltipProvider>
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+                    {/* Presupuesto */}
+                    <Card>
+                        <CardHeader className="pb-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-2 cursor-help">
+                                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">Presupuesto</CardTitle>
+                                        <Info className="h-3 w-3 text-slate-400" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent><p className="max-w-xs">{t('projects.detail.cards.tooltips.budget')}</p></TooltipContent>
+                            </Tooltip>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className="text-xl font-bold text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                            {project.originalBaseline && project.originalBaseline.budget !== project.budget && (
+                                <div className="mt-1 text-xs text-slate-400">Base: <span className="line-through">{project.originalBaseline.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span></div>
+                            )}
+                            {project.contingencyReserve && project.contingencyReserve > 0 && (
+                                <div className="text-xs text-amber-600 mt-1 font-medium">
+                                    Incluye Reserva: {(project.budget * (project.contingencyReserve / 100)).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} ({project.contingencyReserve}%)
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Revenue */}
+                    <Card className="border-l-4 border-l-primary">
+                        <CardHeader className="pb-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-2 cursor-help">
+                                        <CardTitle className="text-xs font-medium text-primary uppercase tracking-wide">Revenue</CardTitle>
+                                        <Info className="h-3 w-3 text-primary/60" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent><p className="max-w-xs">{t('projects.detail.cards.tooltips.revenue')}</p></TooltipContent>
+                            </Tooltip>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className="text-xl font-bold text-primary-dark">{totalRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                            {(project.revenueMethod === 'Input' || project.revenueMethod === 'Output' || project.revenueMethod === 'Linear') && project.budget > 0 && (
+                                <div className="mt-1 text-xs text-slate-500">{((totalRevenue / project.budget) * 100).toFixed(0)}% Completado (Financiero)</div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Margen Bruto - Rediseñado */}
+                    <Card className={`border-l-4 ${grossMargin >= 0 ? 'border-l-green-500' : 'border-l-red-500'}`}>
+                        <CardHeader className="pb-1 flex flex-row items-center justify-between">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-2 cursor-help">
+                                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                            {project.type === 'Internal' ? 'Coste Total' : 'Margen Bruto'}
+                                        </CardTitle>
+                                        <Info className="h-3 w-3 text-slate-400" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent><p className="max-w-xs">{t('projects.detail.cards.tooltips.margin')}</p></TooltipContent>
+                            </Tooltip>
+                            {project.type !== 'Internal' && (
+                                <span className={`text-sm font-bold px-2 py-0.5 rounded ${grossMarginPercent >= 30 ? 'bg-green-100 text-green-700' : grossMarginPercent >= 15 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
+                                    {grossMarginPercent.toFixed(0)}%
+                                </span>
+                            )}
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className={`text-xl font-bold ${grossMargin >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                {project.type === 'Internal' ? totalCost.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) : grossMargin.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
                             </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            {project.type !== 'Internal' && <div className="mt-1 text-xs text-slate-500">Coste: {totalCost.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>}
+                        </CardContent>
+                    </Card>
 
-                {/* Revenue */}
-                <Card className="border-l-4 border-l-primary">
-                    <CardHeader className="pb-1">
-                        <CardTitle className="text-xs font-medium text-primary uppercase tracking-wide">Revenue</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="text-xl font-bold text-primary-dark">{totalRevenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                        {(project.revenueMethod === 'Input' || project.revenueMethod === 'Output' || project.revenueMethod === 'Linear') && project.budget > 0 && (
-                            <div className="mt-1 text-xs text-slate-500">{((totalRevenue / project.budget) * 100).toFixed(0)}% Completado (Financiero)</div>
-                        )}
-                    </CardContent>
-                </Card>
+                    {/* Facturado */}
+                    <Card>
+                        <CardHeader className="pb-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-2 cursor-help">
+                                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">Facturado</CardTitle>
+                                        <Info className="h-3 w-3 text-slate-400" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent><p className="max-w-xs">{t('projects.detail.cards.tooltips.billed')}</p></TooltipContent>
+                            </Tooltip>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className="text-xl font-bold text-primary-dark">{billed.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                        </CardContent>
+                    </Card>
 
-                {/* Margen Bruto - Rediseñado */}
-                <Card className={`border-l-4 ${grossMargin >= 0 ? 'border-l-green-500' : 'border-l-red-500'}`}>
-                    <CardHeader className="pb-1 flex flex-row items-center justify-between">
-                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-                            {project.type === 'Internal' ? 'Coste Total' : 'Margen Bruto'}
-                        </CardTitle>
-                        {project.type !== 'Internal' && (
-                            <span className={`text-sm font-bold px-2 py-0.5 rounded ${grossMarginPercent >= 30 ? 'bg-green-100 text-green-700' : grossMarginPercent >= 15 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>
-                                {grossMarginPercent.toFixed(0)}%
-                            </span>
-                        )}
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className={`text-xl font-bold ${grossMargin >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                            {project.type === 'Internal' ? totalCost.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) : grossMargin.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
-                        </div>
-                        {project.type !== 'Internal' && <div className="mt-1 text-xs text-slate-500">Coste: {totalCost.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>}
-                    </CardContent>
-                </Card>
-
-                {/* Facturado */}
-                <Card>
-                    <CardHeader className="pb-1">
-                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">Facturado</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="text-xl font-bold text-primary-dark">{billed.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                    </CardContent>
-                </Card>
-
-                {/* Backlog */}
-                <Card className="bg-slate-50">
-                    <CardHeader className="pb-1">
-                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">Backlog</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="text-xl font-bold text-slate-700">{(project.budget - totalRevenue).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                    </CardContent>
-                </Card>
-            </div>
+                    {/* Backlog */}
+                    <Card className="bg-slate-50">
+                        <CardHeader className="pb-1">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-2 cursor-help">
+                                        <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wide">Backlog</CardTitle>
+                                        <Info className="h-3 w-3 text-slate-400" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent><p className="max-w-xs">{t('projects.detail.cards.tooltips.backlog')}</p></TooltipContent>
+                            </Tooltip>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            <div className="text-xl font-bold text-slate-700">{(project.budget - totalRevenue).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </TooltipProvider>
 
             {/* Tabs */}
             <div className="border-b border-aux-grey">
