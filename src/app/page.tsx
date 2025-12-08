@@ -5,6 +5,7 @@ import { projectService } from '@/services/projectService';
 import { contractService } from '@/services/contractService';
 import { adminService } from '@/services/adminService'; // For seed button if needed nearby or general utils
 import { Project, Invoice, Contract, WorkLog, Client } from '@/types'; // Added Client import if available or we fetch it
+import { analyzeProjectRisks, ProjectAlert } from '@/services/alertService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Euro, FileText, AlertCircle, Download, ChevronDown, ChevronRight, BarChart3, TrendingUp, Wallet, PieChart as PieIcon, Activity, FileDown } from 'lucide-react';
@@ -35,6 +36,8 @@ export default function Dashboard() {
   const [chartViewMode, setChartViewMode] = useState<'Monthly' | 'Quarterly' | 'Yearly'>('Monthly'); // Controls Billing Chart
   const [currentDate, setCurrentDate] = useState(new Date());
   const [expandedContracts, setExpandedContracts] = useState<Set<string>>(new Set());
+  const [alertsPage, setAlertsPage] = useState(1);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,7 +52,6 @@ export default function Dashboard() {
         const allLogs: WorkLog[] = [];
         for (const p of projectsData) {
           const pLogs = await projectService.getWorkLogs(p.id);
-          // Explicitly ensure projectId is set on the log objects, as it might be missing if stored in subcollections depending on data entry
           const pLogsWithId = pLogs.map(log => ({ ...log, projectId: p.id }));
           allLogs.push(...pLogsWithId);
         }
@@ -69,6 +71,17 @@ export default function Dashboard() {
     };
     fetchData();
   }, []);
+
+  // Active Alerts
+  const activeAlerts = useMemo(() => {
+    let alerts: ProjectAlert[] = [];
+    projects.forEach(p => {
+      if (p.status !== 'Completed' && p.status !== 'Cancelled') {
+        alerts = [...alerts, ...analyzeProjectRisks(p, workLogs)];
+      }
+    });
+    return alerts;
+  }, [projects, workLogs]);
 
   // --- Chart Data Preparation ---
 
@@ -309,7 +322,7 @@ export default function Dashboard() {
 
   const efficiencyRatio = totalBudget > 0 ? (totalJustified / totalBudget) * 100 : 0;
   const efficiencyData = [
-    { name: 'Justificado', value: totalJustified },
+    { name: 'Revenue', value: totalJustified },
     { name: 'Restante', value: Math.max(0, totalBudget - totalJustified) }
   ];
 
@@ -375,6 +388,57 @@ export default function Dashboard() {
 
         {/* --- FINANCIAL TAB --- */}
         <TabsContent value="financial" className="space-y-6">
+
+          {/* Active Alerts Section */}
+          {activeAlerts.length > 0 && (
+            <Card className="border-l-4 border-l-red-500 bg-red-50/10 mb-6">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl text-red-700 flex items-center gap-2">
+                    <AlertCircle className="h-6 w-6" />
+                    Alertas Activas ({activeAlerts.length})
+                  </CardTitle>
+                  <CardDescription>Riesgos detectados en proyectos activos.</CardDescription>
+                </div>
+                {/* Pagination Controls */}
+                {activeAlerts.length > 6 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <button
+                      onClick={() => setAlertsPage(p => Math.max(1, p - 1))}
+                      disabled={alertsPage === 1}
+                      className="p-1 hover:bg-red-100 rounded disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <ChevronDown className="h-4 w-4 rotate-90" />
+                    </button>
+                    <span className="text-red-800 font-medium">
+                      {alertsPage} / {Math.ceil(activeAlerts.length / 6)}
+                    </span>
+                    <button
+                      onClick={() => setAlertsPage(p => Math.min(Math.ceil(activeAlerts.length / 6), p + 1))}
+                      disabled={alertsPage === Math.ceil(activeAlerts.length / 6)}
+                      className="p-1 hover:bg-red-100 rounded disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activeAlerts.slice((alertsPage - 1) * 6, alertsPage * 6).map(alert => (
+                    <div key={alert.id} className={`p-3 rounded border ${alert.type === 'critical' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className={`font-semibold text-sm ${alert.type === 'critical' ? 'text-red-800' : 'text-yellow-800'}`}>{alert.title}</h4>
+                      </div>
+                      <p className="text-xs text-gray-700 font-medium mb-1">{alert.projectTitle}</p>
+                      <p className="text-xs text-gray-600">{alert.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Row 1: Financial KPI Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>

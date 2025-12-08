@@ -482,7 +482,7 @@ export default function BillingPage() {
                                     <CardContent>
                                         <div className="grid grid-cols-3 gap-4 text-sm">
                                             <div>
-                                                <p className="text-muted-foreground">Revenue (Justificado)</p>
+                                                <p className="text-muted-foreground">Revenue (Devengado)</p>
                                                 <p className="font-bold text-lg">{project.justifiedAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                                             </div>
                                             <div>

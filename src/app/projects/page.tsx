@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { projectService } from '@/services/projectService';
-import { Project } from '@/types';
+import { Project, WorkLog } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Plus, Trash2, Pencil, Info } from 'lucide-react';
+import { Plus, Trash2, Pencil, Info, AlertTriangle } from 'lucide-react';
 import { calculateProjectRevenue } from '@/utils/calculations';
 import { useTranslation } from '@/context/LanguageContext';
+import { analyzeProjectRisks } from '@/services/alertService';
 import {
     Tooltip,
     TooltipContent,
@@ -19,6 +20,7 @@ import {
 
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
+    const [workLogs, setWorkLogs] = useState<WorkLog[]>([]);
     const [loading, setLoading] = useState(true);
     const { t } = useTranslation();
 
@@ -27,6 +29,16 @@ export default function ProjectsPage() {
             try {
                 const data = await projectService.getProjects();
                 setProjects(data);
+
+                // Fetch all logs for alerts
+                const allLogs: WorkLog[] = [];
+                for (const p of data) {
+                    const logs = await projectService.getWorkLogs(p.id);
+                    const logsWithId = logs.map(l => ({ ...l, projectId: p.id }));
+                    allLogs.push(...logsWithId);
+                }
+                setWorkLogs(allLogs);
+
             } catch (error) {
                 console.error("Error fetching projects:", error);
             } finally {
@@ -65,6 +77,9 @@ export default function ProjectsPage() {
             <div className="grid gap-4">
                 {projects.map((project) => {
                     const revenue = project.revenueMethod === 'Linear' ? calculateProjectRevenue(project) : (project.justifiedAmount || 0);
+                    const alerts = analyzeProjectRisks(project, workLogs);
+                    const hasCritical = alerts.some(a => a.type === 'critical');
+                    const hasWarning = alerts.some(a => a.type === 'warning');
 
                     return (
                         <Card key={project.id} className="hover:shadow-md transition-shadow">
@@ -78,6 +93,24 @@ export default function ProjectsPage() {
                                     <p className="text-sm text-primary-dark/60">{t('projects.card.client')}: {project.clientId}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    {(hasCritical || hasWarning) && (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <AlertTriangle className={`h-5 w-5 ${hasCritical ? 'text-red-500' : 'text-yellow-500'}`} />
+                                                </TooltipTrigger>
+                                                <TooltipContent className="max-w-[300px]">
+                                                    <div className="text-xs space-y-1">
+                                                        {alerts.map(a => (
+                                                            <div key={a.id} className={a.type === 'critical' ? 'text-red-600 font-bold' : 'text-yellow-700'}>
+                                                                • {a.title}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )}
                                     <Badge variant={project.status === 'Accepted' ? 'default' : 'secondary'} className={project.status === 'Accepted' ? 'bg-secondary-teal' : ''}>
                                         {project.status === 'Accepted' ? t('common.active') : project.status}
                                     </Badge>

@@ -6,7 +6,7 @@ import { projectService } from '@/services/projectService';
 import { contractService } from '@/services/contractService';
 import { Project, ProjectType, RevenueMethod, Milestone, Contract } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, Trash2, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, HelpCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +49,8 @@ export default function EditProjectClient({ id }: { id: string }) {
             innovation: 0,
             customerImpact: 0,
             viability: 0
-        }
+        },
+        contingencyReserve: 0
     });
 
     const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -97,7 +98,8 @@ export default function EditProjectClient({ id }: { id: string }) {
                             innovation: 0,
                             customerImpact: 0,
                             viability: 0
-                        }
+                        },
+                        contingencyReserve: found.contingencyReserve || 0
                     });
                     if (found.milestones) {
                         setMilestones(found.milestones);
@@ -175,7 +177,8 @@ export default function EditProjectClient({ id }: { id: string }) {
                 linearMonthlyAmount: (formData.type === 'Fixed' && formData.revenueMethod === 'Linear') ? Number(formData.linearMonthlyAmount) : undefined,
                 strategicScore: Number(formData.strategicScore) || undefined,
                 expectedROI: Number(formData.expectedROI) || undefined,
-                strategicBreakdown: formData.strategicBreakdown
+                strategicBreakdown: formData.strategicBreakdown,
+                contingencyReserve: Number(formData.contingencyReserve) || 0
             };
 
             const projectToSave = JSON.parse(JSON.stringify(updatedProject));
@@ -334,6 +337,53 @@ export default function EditProjectClient({ id }: { id: string }) {
                                             required
                                         />
                                     </div>
+                                    <div className="col-span-2 bg-yellow-50 p-4 rounded-md border border-yellow-200">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h4 className="text-sm font-bold text-yellow-900 flex items-center gap-2">
+                                                <AlertTriangle className="h-4 w-4" />
+                                                Gestión de Riesgos y Reserva
+                                            </h4>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger><HelpCircle className="h-4 w-4 text-yellow-700" /></TooltipTrigger>
+                                                    <TooltipContent><p>Define qué parte del presupuesto se reserva para riesgos desconocidos.</p></TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-xs font-medium text-yellow-800 mb-1">Reserva (% sobre Venta)</label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="number"
+                                                        value={formData.contingencyReserve}
+                                                        onChange={(e) => setFormData({ ...formData, contingencyReserve: Number(e.target.value) })}
+                                                        className="w-24 rounded-md border border-yellow-300 px-3 py-2 text-sm focus:border-yellow-500 focus:ring-yellow-500"
+                                                        min="0"
+                                                        max="50"
+                                                        step="0.1"
+                                                    />
+                                                    <span className="text-sm font-bold text-yellow-900">%</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2 bg-white/50 p-3 rounded border border-yellow-100 text-sm">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-slate-600">Presupuesto Venta (Cliente):</span>
+                                                    <span className="font-bold text-slate-800">{formData.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-yellow-700">
+                                                    <span>(-) Reserva Contingencia:</span>
+                                                    <span>{((formData.budget * (formData.contingencyReserve || 0)) / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span>
+                                                </div>
+                                                <div className="border-t border-yellow-200 pt-1 flex justify-between items-center font-bold text-primary-dark">
+                                                    <span>(=) Presupuesto Operativo (PM):</span>
+                                                    <span>{(formData.budget - (formData.budget * (formData.contingencyReserve || 0)) / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {(formData.type === 'TM' || formData.type === 'Internal') && (
@@ -370,7 +420,7 @@ export default function EditProjectClient({ id }: { id: string }) {
                                         <option value="Budgeted">Presupuestado</option>
                                         <option value="Accepted">Aceptado</option>
                                         <option value="In Progress">En Progreso</option>
-                                        <option value="Justified">Justificado</option>
+                                        <option value="Justified">Revenue (Devengado)</option>
                                         <option value="Completed">Completado</option>
                                         <option value="Closed">Cerrado</option>
                                     </select>
@@ -544,8 +594,20 @@ export default function EditProjectClient({ id }: { id: string }) {
 
                                         {/* Alignment (Max 30) */}
                                         <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.alignment')}</label>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.alignment')}</label>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="max-w-[300px]">{t('projects.form.criteria.tooltips.alignment')}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
                                                 <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.alignment} / 30</span>
                                             </div>
                                             <input
@@ -563,8 +625,20 @@ export default function EditProjectClient({ id }: { id: string }) {
 
                                         {/* Innovation (Max 30) */}
                                         <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.innovation')}</label>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.innovation')}</label>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="max-w-[300px]">{t('projects.form.criteria.tooltips.innovation')}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
                                                 <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.innovation} / 30</span>
                                             </div>
                                             <input
@@ -582,8 +656,20 @@ export default function EditProjectClient({ id }: { id: string }) {
 
                                         {/* Customer Impact (Max 20) */}
                                         <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.customerImpact')}</label>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.customerImpact')}</label>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="max-w-[300px]">{t('projects.form.criteria.tooltips.customerImpact')}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
                                                 <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.customerImpact} / 20</span>
                                             </div>
                                             <input
@@ -601,8 +687,20 @@ export default function EditProjectClient({ id }: { id: string }) {
 
                                         {/* Viability (Max 20) */}
                                         <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.viability')}</label>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-sm font-medium text-primary-dark">{t('projects.form.criteria.viability')}</label>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p className="max-w-[300px]">{t('projects.form.criteria.tooltips.viability')}</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
                                                 <span className="text-sm font-bold text-primary">{formData.strategicBreakdown.viability} / 20</span>
                                             </div>
                                             <input
@@ -656,10 +754,14 @@ export default function EditProjectClient({ id }: { id: string }) {
 
                 <TabsContent value="planning">
                     <div className="space-y-8">
-                        <BudgetPlanner project={project} onUpdate={handleProjectUpdate} />
-                        <div className="border-t pt-8">
-                            <BillingPlanner project={project} onUpdate={handleProjectUpdate} />
-                        </div>
+                        {project && (
+                            <>
+                                <BudgetPlanner project={project} onUpdate={handleProjectUpdate} />
+                                <div className="border-t pt-8">
+                                    <BillingPlanner project={project} onUpdate={handleProjectUpdate} />
+                                </div>
+                            </>
+                        )}
                     </div>
                 </TabsContent>
             </Tabs>

@@ -209,6 +209,72 @@ export const MOCK_PROJECTS: Project[] = [
         strategicScore: 50,
         strategicBreakdown: { alignment: 15, innovation: 10, customerImpact: 15, viability: 10 },
     },
+
+    // === CASE 8: RISK - Low CPI (Critical) ===
+    {
+        id: 'p-risk-cpi',
+        contractId: 'ctr2',
+        title: 'Proyecto en Riesgo (Sobrecoste)',
+        clientId: 'c2',
+        status: 'In Progress',
+        type: 'TM',
+        revenueMethod: 'Input',
+        budget: 30000,
+        totalEstimatedCosts: 45000, // Updated: Estimate reflects the disaster (Runaway costs)
+        justifiedAmount: 0, // Will be calculated by system: (27k / 45k) * 30k = ~18k
+        billedAmount: 10000,
+        startDate: relativeDate(-3, 1),
+        endDate: relativeDate(3, 1),
+        isAdvance: false,
+        budgetLines: [],
+        contingencyReserve: 5,
+        strategicScore: 40,
+        strategicBreakdown: { alignment: 10, innovation: 10, customerImpact: 10, viability: 10 },
+    },
+
+    // === CASE 9: RISK - Schedule Overrun (Critical) ===
+    {
+        id: 'p-risk-schedule',
+        contractId: 'ctr1',
+        title: 'Proyecto Vencido',
+        clientId: 'c1',
+        status: 'In Progress', // Still active but past end date
+        type: 'Fixed',
+        revenueMethod: 'Output',
+        budget: 45000,
+        justifiedAmount: 40000,
+        billedAmount: 40000,
+        startDate: relativeDate(-6, 1),
+        endDate: relativeDate(-1, 1), // Ended last month
+        isAdvance: false,
+        budgetLines: [],
+        milestones: [
+            { id: 'm-ks-1', name: 'Hito Final', percentage: 100, completed: false } // Not done
+        ],
+        strategicScore: 60,
+        strategicBreakdown: { alignment: 15, innovation: 15, customerImpact: 15, viability: 15 },
+    },
+
+    // === CASE 10: RISK - High WIP (Billing Risk) ===
+    {
+        id: 'p-risk-wip',
+        contractId: 'ctr1',
+        title: 'Proyecto Alta Deuda (WIP)',
+        clientId: 'c1',
+        status: 'In Progress',
+        type: 'TM',
+        revenueMethod: 'Input',
+        budget: 150000,
+        totalEstimatedCosts: 100000,
+        justifiedAmount: 45000, // Revenue Recognized
+        billedAmount: 5000,     // Billed very little -> High WIP (40k)
+        startDate: relativeDate(-2, 1),
+        endDate: relativeDate(10, 1),
+        isAdvance: false,
+        budgetLines: [],
+        strategicScore: 80,
+        strategicBreakdown: { alignment: 20, innovation: 20, customerImpact: 20, viability: 20 },
+    },
 ];
 
 // ============ INVOICES ============
@@ -263,6 +329,11 @@ export const MOCK_WORK_LOGS: WorkLog[] = [
     { id: 'log-bl-2', projectId: 'p-baseline', date: relativeDate(-2, 10), concept: 'Desarrollo Core', amount: 20000, hours: 200, resourceId: 'res-4', costAmount: 9000 },
 
     // Milestones Project - No logs (revenue from milestones)
+
+    // Risk CPI Project - High Costs (AC)
+    { id: 'log-rc-1', projectId: 'p-risk-cpi', date: relativeDate(-2, 10), concept: 'Desarrollo excesivo', amount: 10000, hours: 200, resourceId: 'res-4', costAmount: 18000 },
+    { id: 'log-rc-2', projectId: 'p-risk-cpi', date: relativeDate(-1, 5), concept: 'Rework no planificado', amount: 5000, hours: 100, resourceId: 'res-4', costAmount: 9000 },
+    // Total AC = 27000 vs EV = 20000 -> CPI = 0.74 (Critical)
 ];
 
 // ============ SEED FUNCTION ============

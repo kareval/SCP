@@ -1,4 +1,4 @@
-export type ProjectStatus = 'Draft' | 'Budgeted' | 'Approved' | 'In Progress' | 'Justified' | 'Accepted' | 'Billed' | 'Closed';
+export type ProjectStatus = 'Draft' | 'Budgeted' | 'Approved' | 'In Progress' | 'Justified' | 'Accepted' | 'Billed' | 'Closed' | 'Completed' | 'Cancelled';
 
 export interface Client {
     id: string;
@@ -62,6 +62,7 @@ export interface Project {
     justifiedAmount: number; // Revenue Recognized
     billedAmount: number;
     completionPercentage?: number; // For Fixed Price (Legacy/Simple)
+    contingencyReserve?: number; // % of Budget reserved for risks
 
     // Strategic Metrics
     strategicScore?: number; // 0-100 Valor Estratégico (Calculated Sum)

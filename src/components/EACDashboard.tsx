@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useEffect, useState } from 'react';
 import { Project, WorkLog } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -12,11 +13,14 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button"; // Assuming Button component exists OR use standard button
+import { Button } from "@/components/ui/button";
 import { projectService } from '@/services/projectService';
 import { calculateProjectRevenue } from '@/utils/calculations';
 import { Save } from "lucide-react";
 import { useTranslation } from '@/context/LanguageContext';
+import { calculatePV, calculateSPI, calculateCPI, calculateTCPI } from '@/utils/evm';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+
 
 interface EACDashboardProps {
     initialProject: Project;
@@ -30,6 +34,12 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
     const [workLogs, setWorkLogs] = useState<WorkLog[]>(initialLogs);
     const [manualProgress, setManualProgress] = useState<number>(initialProject.lastEACSimulation?.progress || 0);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Sync state with props
+    useEffect(() => {
+        setProject(initialProject);
+        setWorkLogs(initialLogs);
+    }, [initialProject, initialLogs]);
 
     useEffect(() => {
         // Only set default progress if NO persisted simulation exists
@@ -61,35 +71,30 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
 
     // 2. Calculate EV (Earned Value)
     const BAC = project.budget;
-    // For Linear, EV is simply the Unified Revenue. For Input/Output, ManualProgress is derived from unified logic anyway.
-    // However, ManualProgress is a UI slider/state. To match unified logic 100%, we should assume:
-    // If user hasn't touched the slider (we set it in useEffect), then it matches.
-    // But `calculateProjectRevenue` is the source of truth for "Revenue".
-    // "Revenue" IS "Earned Value" in strict terms for Fixed Price.
-    const revenue = calculateProjectRevenue(project, AC);
-
-    // If we want EV to react to manual slider changes for "What-If" analysis?
-    // Then we keep EV = BAC * (manualProgress / 100).
-    // The useEffect syncs manualProgress to calculated state on load.
-    // So this is correct for "What-If" but also matches actual if untouched.
+    // Note: calculateProjectRevenue currently calculates EV based on method.
+    // However, manualProgress slider overrides this for What-If in this dashboard.
+    // const revenue = calculateProjectRevenue(project, AC); 
     const EV = BAC * (manualProgress / 100);
 
-    // 3. Calculate CPI (Cost Performance Index)
-    const CPI = AC > 0 ? EV / AC : 1;
+    // 3. Calculate Performance Indices (CPI, SPI, TCPI)
+    const PV = calculatePV(project);
+    const SPI = calculateSPI(EV, PV);
+    // CPI: Default to 1 if no AC to avoid infinity, but if EV > 0 and AC = 0, it's infinite efficiency. 
+    // calculateCPI handles AC=0 by returning 1.
+    const CPI = calculateCPI(EV, AC);
+    const TCPI = calculateTCPI(BAC, EV, AC);
 
-    // 4. Calculate EAC (Estimate at Completion)
+    // 4. Calculate EAC (Estimate at Completion) - Scenarios
+    const reserveAmount = (BAC * (project.contingencyReserve || 0)) / 100;
+
+    // Standard / Trend (Likely): Assumes current CPI continues
     const EAC = CPI > 0 ? BAC / CPI : BAC;
 
-    // Variation
+    // Optimistic: AC + (BAC - EV) - Reserve (Execution at budget rate, no risk usage)
+    const EAC_Optimistic = AC + Math.max(0, (BAC - EV) - reserveAmount);
+
     // Variation
     const variation = BAC - EAC;
-
-    // 5. Calculate TCPI (To Complete Performance Index)
-    // Work Remaining (BAC - EV) / Funds Remaining (BAC - AC)
-    // How efficient we need to be to finish on budget.
-    const workRemaining = Math.max(0, BAC - EV);
-    const fundsRemaining = BAC - AC;
-    const TCPI = fundsRemaining > 0 ? workRemaining / fundsRemaining : (workRemaining > 0 ? 999 : 0); // 999 indicates impossible/infinite
 
     return (
         <div className="space-y-8">
@@ -119,11 +124,6 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                             </div>
                         </>
                     )}
-                    {/* If embedded, we might want just the simulation info or nothing? 
-                        If we hide the whole left part, we lose the "Simulation Date" info.
-                        Let's show the Simulation Date info near the button or somewhere else if embedded?
-                        For now, per "remove header", I'll hide the whole left block. 
-                     */}
                 </div>
                 <Button
                     onClick={async () => {
@@ -164,7 +164,6 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div>
-
                             <div className="flex justify-between items-center mb-1">
                                 <label className="text-sm font-medium text-primary-dark">{t('eac.totalBudget')}</label>
                                 <TooltipProvider>
@@ -178,7 +177,6 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         </div>
 
                         <div>
-
                             <div className="flex justify-between items-center mb-1">
                                 <label className="text-sm font-medium text-primary-dark">{t('eac.actualCost')}</label>
                                 <TooltipProvider>
@@ -193,7 +191,6 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                         </div>
 
                         <div>
-
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-sm font-medium text-primary-dark">{t('eac.physicalProgress')}</label>
                                 <TooltipProvider>
@@ -230,132 +227,107 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                             {t('eac.financialProjection')}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* EV Card */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col justify-between">
-                            <div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-medium text-primary-dark">{t('eac.ev')}</h3>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                            <TooltipContent><p>{t('eac.evTooltip')}</p></TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
-                                <div className="text-2xl font-bold text-primary">{EV.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                            </div>
-                        </div>
-
-                        {/* EAC Card */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col justify-between">
-                            <div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-medium text-primary-dark">{t('eac.eac')}</h3>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                            <TooltipContent><p>{t('eac.eacTooltip')}</p></TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
-                                <div className="text-3xl font-bold text-primary-dark">{EAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
-                                <div className="mt-2 text-xs text-primary-dark/60">
-                                    vs Presupuesto: {BAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* EV Card */}
+                            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="font-medium text-primary-dark">{t('eac.ev')}</h3>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                                <TooltipContent><p>{t('eac.evTooltip')}</p></TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </div>
+                                    <div className="text-2xl font-bold text-primary">{EV.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* CPI Card */}
-                        <div className={`p-4 rounded-lg shadow-sm border ${CPI >= 1 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} h-full flex flex-col justify-between`}>
-                            <div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-medium ${CPI >= 1 ? 'text-green-800' : 'text-red-800'}`}>{t('eac.cpi')}</h3>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger><Info className={`h-4 w-4 ${CPI >= 1 ? 'text-green-800/40' : 'text-red-800/40'}`} /></TooltipTrigger>
-                                            <TooltipContent><p>{t('eac.cpiTooltip')}</p></TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
-                                <div className="flex items-end gap-2">
-                                    <div className={`text-3xl font-bold ${CPI >= 1 ? 'text-green-700' : 'text-red-700'}`}>{CPI.toFixed(2)}</div>
-                                    <div className="text-sm mb-1 font-medium">
-                                        {CPI >= 1 ? (
-                                            <span className="text-green-700 flex items-center"><CheckCircle className="h-3 w-3 mr-1" /> Eficiente</span>
-                                        ) : (
-                                            <span className="text-red-700 flex items-center"><AlertTriangle className="h-3 w-3 mr-1" /> Ineficiente</span>
+                            {/* EAC Summary Card */}
+                            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="font-medium text-primary-dark">{t('eac.eac')} (Probable)</h3>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
+                                                <TooltipContent><p>{t('eac.eacTooltip')}</p></TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </div>
+                                    <div className="text-3xl font-bold text-primary-dark">{EAC.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+                                    <div className="mt-2 space-y-1 bg-slate-50 p-2 rounded border border-slate-100">
+                                        <div className="flex justify-between text-xs">
+                                            <span className="text-primary-dark/60" title="EAC si el resto va según presupuesto">Optimista:</span>
+                                            <span className="font-medium text-green-700">{EAC_Optimistic.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span>
+                                        </div>
+                                        {reserveAmount > 0 && (
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-primary-dark/60">Reserva ({project.contingencyReserve}%):</span>
+                                                <span className="font-medium text-yellow-700">{reserveAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span>
+                                            </div>
                                         )}
+                                        <div className="text-[10px] text-right text-slate-400 mt-1 pt-1 border-t border-slate-200">
+                                            CPI: {CPI.toFixed(2)}
+                                        </div>
                                     </div>
                                 </div>
-                                <p className={`text-xs mt-2 ${CPI >= 1 ? 'text-green-800/70' : 'text-red-800/70'}`}>
-                                    Por cada euro gastado, generas <strong>{CPI.toFixed(2)}€</strong> de valor.
-                                </p>
                             </div>
                         </div>
 
-                        {/* Variation Card */}
-                        <div className={`p-4 rounded-lg shadow-sm border ${variation >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} h-full flex flex-col justify-between`}>
-                            <div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-medium ${variation >= 0 ? 'text-green-800' : 'text-red-800'}`}>{t('eac.variation')}</h3>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger><Info className={`h-4 w-4 ${variation >= 0 ? 'text-green-800/40' : 'text-red-800/40'}`} /></TooltipTrigger>
-                                            <TooltipContent><p>{t('eac.variationTooltip')}</p></TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
-                                <div className={`text-2xl font-bold ${variation >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                                    {variation >= 0 ? '+' : ''}{variation.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
-                                </div>
-                                <p className={`text-xs mt-2 ${variation >= 0 ? 'text-green-800/70' : 'text-red-800/70'}`}>
-                                    {variation >= 0
-                                        ? 'El proyecto terminará por debajo del presupuesto.'
-                                        : 'Se prevé un sobrecoste al finalizar el proyecto.'}
-                                </p>
-                            </div>
+                        {/* Scenario Comparison Chart */}
+                        <div className="h-64 w-full bg-white p-4 rounded border border-gray-200">
+                            <h4 className="text-sm font-semibold text-primary-dark mb-4 text-center">Escenarios de Cierre (Cono de Incertidumbre)</h4>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={[
+                                        {
+                                            name: 'Escenarios',
+                                            Optimista: Math.round(EAC_Optimistic),
+                                            Probable: Math.round(EAC),
+                                            Pesimista: Math.round(EAC + reserveAmount), // Pessimistic logic
+                                            Presupuesto: Math.round(BAC)
+                                        }
+                                    ]}
+                                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" hide />
+                                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}k€`} />
+                                    <RechartsTooltip
+                                        formatter={(value: number) => value.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                                        cursor={{ fill: 'transparent' }}
+                                    />
+                                    <Legend />
+                                    <Bar dataKey="Optimista" fill="#22c55e" name="Optimista" barSize={40} />
+                                    <Bar dataKey="Probable" fill="#3b82f6" name="Probable" barSize={40} />
+                                    <Bar dataKey="Pesimista" fill="#ef4444" name="Pesimista" barSize={40} />
+                                    <Bar dataKey="Presupuesto" fill="#9ca3af" name="BAC (Límite)" barSize={20} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
 
-                        {/* TCPI Card */}
-                        <div className={`p-4 rounded-lg shadow-sm border ${TCPI <= 1 ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'} h-full flex flex-col justify-between`}>
-                            <div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-medium ${TCPI <= 1 ? 'text-green-800' : 'text-orange-800'}`}>{t('eac.tcpi')}</h3>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger><Info className={`h-4 w-4 ${TCPI <= 1 ? 'text-green-800/40' : 'text-orange-800/40'}`} /></TooltipTrigger>
-                                            <TooltipContent><p>{t('eac.tcpiTooltip')}</p></TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                </div>
-                                <div className="text-3xl font-bold text-primary-dark">{TCPI > 100 ? '>100' : TCPI.toFixed(2)}</div>
-                                <p className={`text-xs mt-2 ${TCPI <= 1 ? 'text-green-800/70' : 'text-orange-800/70'}`}>
-                                    {TCPI <= 1
-                                        ? 'Es factible terminar en presupuesto.'
-                                        : 'Se requiere una eficiencia mucho mayor para recuperar el presupuesto.'}
-                                </p>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                            {/* CPI & SPI Mini Cards */}
+                            <div className={`p-4 rounded-lg shadow-sm border ${CPI >= 1 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                <h3 className="text-xs font-semibold uppercase text-slate-500 mb-1">{t('eac.cpi')}</h3>
+                                <div className={`text-xl font-bold ${CPI >= 1 ? 'text-green-700' : 'text-red-700'}`}>{CPI.toFixed(2)}</div>
                             </div>
-                        </div>
-
-                        {/* Margin Projected Card */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 h-full flex flex-col justify-between">
-                            <div>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-medium text-primary-dark">Margen Proyectado</h3>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger><Info className="h-4 w-4 text-primary-dark/40" /></TooltipTrigger>
-                                            <TooltipContent><p>(BAC - EAC) / BAC</p></TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
+                            <div className={`p-4 rounded-lg shadow-sm border ${SPI >= 0.95 ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
+                                <h3 className="text-xs font-semibold uppercase text-slate-500 mb-1">SPI</h3>
+                                <div className={`text-xl font-bold ${SPI >= 0.95 ? 'text-green-700' : 'text-orange-700'}`}>{SPI.toFixed(2)}</div>
+                            </div>
+                            <div className={`p-4 rounded-lg shadow-sm border ${variation >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                <h3 className="text-xs font-semibold uppercase text-slate-500 mb-1">{t('eac.variation')}</h3>
+                                <div className={`text-xl font-bold ${variation >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                    {variation >= 0 ? '+' : ''}{variation.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
                                 </div>
-                                <div className={`text-2xl font-bold ${(BAC - EAC) / BAC >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                                    {(((BAC - EAC) / BAC) * 100).toFixed(1)}%
-                                </div>
-                                <p className="text-xs text-primary-dark/60 mt-1">
-                                    Rentabilidad estimada al cierre.
-                                </p>
+                            </div>
+                            <div className={`p-4 rounded-lg shadow-sm border ${TCPI <= 1 ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
+                                <h3 className="text-xs font-semibold uppercase text-slate-500 mb-1">{t('eac.tcpi')}</h3>
+                                <div className="text-xl font-bold text-slate-700">{TCPI > 100 ? '>100' : TCPI.toFixed(2)}</div>
                             </div>
                         </div>
                     </CardContent>
@@ -457,104 +429,7 @@ export default function EACDashboard({ initialProject, initialLogs, isEmbedded =
                 </Card>
             </div>
 
-            {/* Chart Placeholder (Visual Representation) */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-primary-dark">{t('eac.performanceCurve')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="relative h-64 w-full bg-white border-l border-b border-gray-300 p-4">
-                        {/* This is a simple CSS visualization of the 3 lines */}
-                        <div className="absolute left-0 bottom-0 w-full h-full pointer-events-none">
-                            <svg className="w-full h-full overflow-visible">
-                                {/* Planned Value (PV) Curve - Blue Line */}
-                                {project.monthlyBudget && project.monthlyBudget.length > 0 && project.startDate && project.endDate && (() => {
-                                    // Generate all months between start and end date
-                                    const start = new Date(project.startDate);
-                                    const end = new Date(project.endDate);
-                                    const allMonths: string[] = [];
-                                    let current = new Date(start);
-                                    // Ensure we include the end month
-                                    const endMonthStr = end.toISOString().slice(0, 7);
 
-                                    while (current <= end || current.toISOString().slice(0, 7) === endMonthStr) {
-                                        const mStr = current.toISOString().slice(0, 7);
-                                        if (!allMonths.includes(mStr)) {
-                                            allMonths.push(mStr);
-                                        }
-                                        current.setMonth(current.getMonth() + 1);
-                                        if (allMonths.length > 60) break;
-                                    }
-
-                                    if (allMonths.length === 0) return null;
-
-                                    let cumulativePV = 0;
-                                    const points = allMonths.map((month, index) => {
-                                        const monthTotal = project.monthlyBudget!
-                                            .filter(mb => mb.month === month)
-                                            .reduce((acc, curr) => acc + curr.amount, 0);
-                                        cumulativePV += monthTotal;
-
-                                        const x = (index / (allMonths.length - 1)) * 100;
-                                        const y = 100 - (Math.min(cumulativePV / (BAC * 1.5), 1) * 100);
-                                        return `${x}%,${y}%`;
-                                    });
-
-                                    if (allMonths.length === 1) {
-                                        const y = 100 - (Math.min(cumulativePV / (BAC * 1.5), 1) * 100);
-                                        return (
-                                            <line x1="0" y1={`${y}%`} x2="100%" y2={`${y}%`} stroke="#3b82f6" strokeWidth="2" strokeDasharray="4" />
-                                        );
-                                    }
-
-                                    return (
-                                        <polyline
-                                            points={points.join(' ')}
-                                            fill="none"
-                                            stroke="#3b82f6"
-                                            strokeWidth="2"
-                                            strokeDasharray="4"
-                                        />
-                                    );
-                                })()}
-
-                                {/* Baseline (Budget) - Dotted Gray Line (Reference) */}
-                                <line x1="0" y1={`${100 - (Math.min(BAC / (BAC * 1.5), 1) * 100)}%`} x2="100%" y2={`${100 - (Math.min(BAC / (BAC * 1.5), 1) * 100)}%`} stroke="#9ca3af" strokeWidth="1" strokeDasharray="2" />
-                                <text x="100%" y={`${100 - (Math.min(BAC / (BAC * 1.5), 1) * 100)}%`} dy="-5" dx="-20" fill="#9ca3af" fontSize="10">BAC</text>
-
-                                {/* AC Line */}
-                                <line x1="0" y1="100%" x2={`${manualProgress}%`} y2={`${100 - (Math.min(AC / (BAC * 1.5), 1) * 100)}%`} stroke="#ef4444" strokeWidth="2" />
-                                <circle cx={`${manualProgress}%`} cy={`${100 - (Math.min(AC / (BAC * 1.5), 1) * 100)}%`} r="4" fill="#ef4444" />
-                                <text x={`${manualProgress}%`} y={`${100 - (Math.min(AC / (BAC * 1.5), 1) * 100)}%`} dy="-10" dx="5" fill="#ef4444" fontSize="10">AC</text>
-
-                                {/* EV Line - Solid Green Line */}
-                                <line x1="0" y1="100%" x2={`${manualProgress}%`} y2={`${100 - (Math.min(EV / (BAC * 1.5), 1) * 100)}%`} stroke="#22c55e" strokeWidth="2" />
-                                <circle cx={`${manualProgress}%`} cy={`${100 - (Math.min(EV / (BAC * 1.5), 1) * 100)}%`} r="4" fill="#22c55e" />
-                                <text x={`${manualProgress}%`} y={`${100 - (Math.min(EV / (BAC * 1.5), 1) * 100)}%`} dy="15" dx="5" fill="#22c55e" fontSize="10">EV</text>
-
-                                {/* Forecast Line - Dashed Red Line projecting to EAC */}
-                                <line
-                                    x1={`${manualProgress}%`}
-                                    y1={`${100 - (Math.min(AC / (BAC * 1.5), 1) * 100)}%`}
-                                    x2="100%"
-                                    y2={`${100 - (Math.min(EAC / (BAC * 1.5), 1) * 100)}%`}
-                                    stroke="#ef4444"
-                                    strokeWidth="2"
-                                    strokeDasharray="4"
-                                />
-                                <text x="100%" y={`${100 - (Math.min(EAC / (BAC * 1.5), 1) * 100)}%`} dy="-5" dx="-20" fill="#ef4444" fontSize="10" fontWeight="bold">EAC</text>
-                            </svg>
-                        </div>
-                    </div>
-                    <div className="flex justify-center gap-6 mt-4 text-xs">
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-gray-400 border-t border-dashed"></div> {t('eac.totalBudget')}</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 border-t-2 border-dashed border-blue-500"></div> {t('eac.planned')}</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-red-500"></div> {t('eac.actualCost')}</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 bg-green-500"></div> {t('eac.ev')}</div>
-                        <div className="flex items-center gap-1"><div className="w-3 h-1 border-t-2 border-dashed border-red-500"></div> {t('eac.projection')}</div>
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
 }

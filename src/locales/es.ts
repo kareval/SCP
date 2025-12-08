@@ -35,7 +35,7 @@ export const es = {
         financialTab: 'Visión Financiera',
         strategicTab: 'Visión Estratégica',
         billingTrend: 'Tendencia de Facturación (6 meses)',
-        efficiency: 'Eficiencia Operativa (Justificado vs Presupuesto)',
+        efficiency: 'Eficiencia Operativa (Revenue vs Presupuesto)',
         clientConcentration: 'Concentración por Cliente (TCV)',
         strategicRadar: 'Radar de Puntuación Estratégica',
         subtitle: 'KPIs Financieros y Análisis Estratégico',
@@ -51,7 +51,7 @@ export const es = {
         },
         kpi: {
             budgetActive: 'Presupuesto Activo',
-            justified: 'Justificado',
+            justified: 'Revenue (Devengado)',
             billed: 'Facturado',
             wip: 'WIP (Pendiente)',
             tcv: 'Valor Total Contratos',
@@ -66,7 +66,7 @@ export const es = {
             recognized: 'Reconocido este año'
         },
         billingTrendSubtitle: 'Facturación mensual últimos 6 meses',
-        efficiencySubtitle: 'Progreso de Justificación vs Presupuesto Total',
+        efficiencySubtitle: 'Progreso de Revenue vs Presupuesto Total',
         executed: 'Ejecutado',
         clientConcentrationSubtitle: 'Valor de Cartera (TCV) por Cliente',
         strategicRadarSubtitle: 'Media de puntuación por criterio',
@@ -117,7 +117,13 @@ export const es = {
                 alignment: 'Alineación Estratégica (OKRs)',
                 innovation: 'Innovación y Mercado',
                 customerImpact: 'Impacto Cliente (Tier 1)',
-                viability: 'Viabilidad y Riesgo'
+                viability: 'Viabilidad y Riesgo',
+                tooltips: {
+                    alignment: 'Grado de contribución a los objetivos clave de la empresa y alineación con la visión a largo plazo.',
+                    innovation: 'Potencial para generar nuevas oportunidades de mercado, propiedad intelectual o ventajas competitivas tecnológicas.',
+                    customerImpact: 'Valor percibido por el cliente, criticidad para su negocio y potencial de fidelización (Tier 1).',
+                    viability: 'Factibilidad técnica y operativa. Evalúa la complejidad, recursos disponibles y riesgos de ejecución.'
+                }
             }
         },
         detail: {

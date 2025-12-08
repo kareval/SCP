@@ -342,6 +342,11 @@ function ProjectDetailsContent() {
                         {project.originalBaseline && project.originalBaseline.budget !== project.budget && (
                             <div className="mt-1 text-xs text-slate-400">Base: <span className="line-through">{project.originalBaseline.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span></div>
                         )}
+                        {project.contingencyReserve && project.contingencyReserve > 0 && (
+                            <div className="text-xs text-amber-600 mt-1 font-medium">
+                                Incluye Reserva: {(project.budget * (project.contingencyReserve / 100)).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} ({project.contingencyReserve}%)
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
