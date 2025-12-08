@@ -264,6 +264,12 @@ export const MOCK_WORK_LOGS: WorkLog[] = [
     { id: 'log-int-1', projectId: 'p-internal', date: relativeDate(-1, 10), concept: 'Investigación', amount: 0, hours: 100, resourceId: 'res-4', costAmount: 4500 },
     { id: 'log-int-2', projectId: 'p-internal', date: relativeDate(0, 5), concept: 'PoC Development', amount: 0, hours: 200, resourceId: 'res-4', costAmount: 9000 },
 
+    // === Schedule Risk: Work Done Late ===
+    // Revenue via Milestones, but Cost via Hours must exist to calculate Margin
+    { id: 'log-sr-1', projectId: 'p-risk-schedule', date: relativeDate(-7, 5), concept: 'Fase Diseño', amount: 0, hours: 250, resourceId: 'res-2', costAmount: 11250 }, // Fixed Price (Rev=0 in logs)
+    { id: 'log-sr-2', projectId: 'p-risk-schedule', date: relativeDate(-5, 5), concept: 'Desarrollo Frontend', amount: 0, hours: 300, resourceId: 'res-4', costAmount: 13500 },
+    { id: 'log-sr-3', projectId: 'p-risk-schedule', date: relativeDate(-2, 5), concept: 'Desarrollo Backend', amount: 0, hours: 300, resourceId: 'res-4', costAmount: 13500 },
+
     // === High WIP: Work Done, Not Billed ===
     { id: 'log-wip-1', projectId: 'p-risk-wip', date: relativeDate(-2, 10), concept: 'Sprint 1', amount: 15000, hours: 150, resourceId: 'res-4', costAmount: 6750 },
     { id: 'log-wip-2', projectId: 'p-risk-wip', date: relativeDate(-1, 10), concept: 'Sprint 2', amount: 15000, hours: 150, resourceId: 'res-4', costAmount: 6750 },
