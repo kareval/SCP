@@ -64,7 +64,7 @@ export default function SettingsPage() {
 
     const handleClearDatabase = async () => {
         const confirmation = prompt('PELIGRO: Esto borrará TODOS los datos (Proyectos, Facturas, Clientes). Escribe "BORRAR" para confirmar.');
-        if (confirmation !== 'BORRAR') return;
+        if (!confirmation || confirmation.toUpperCase() !== 'BORRAR') return;
         setLoading(true);
         setMessage('Borrando base de datos...');
         try {

@@ -53,7 +53,9 @@ export const MOCK_RESOURCES: Resource[] = [
 // ============ PROJECTS ============
 export const MOCK_PROJECTS: Project[] = [
     // === CASE 1: GOLDEN PATH (Success) ===
-    // High Margin, Ahead of Schedule, No Risks
+    // Type: Time & Materials
+    // Logic: Bill Rates are high vs Cost Rates.
+    // Stats: Revenue 90k, Cost 36.7k -> Margin 59% (Success)
     {
         id: 'p-high-margin',
         contractId: 'ctr1',
@@ -61,48 +63,51 @@ export const MOCK_PROJECTS: Project[] = [
         clientId: 'c1',
         status: 'In Progress',
         type: 'TM',
-        revenueMethod: 'Input',
+        revenueMethod: 'Input', // For TM, this implies logic based on logs, but let's stick to simple TM behavior
         budget: 150000,
         totalEstimatedCosts: 80000,
-        justifiedAmount: 90000, // 60% Revenue
+        justifiedAmount: 90000, // Sum of Logs Amount
         billedAmount: 85000,    // Good Cash Flow
         startDate: relativeDate(-5, 1),
         endDate: relativeDate(3, 28),
         isAdvance: false,
         budgetLines: [],
-        contingencyReserve: 5, // 5% Reserve (Unused)
+        contingencyReserve: 5,
         strategicScore: 92,
         strategicBreakdown: { alignment: 28, innovation: 28, customerImpact: 18, viability: 18 },
         expectedROI: 45.5,
         team: [{ ...MOCK_RESOURCES[3], overrideBillRate: 110 }],
     },
 
-    // === CASE 2: RISK PROJECT (Low CPI & Reserve Usage) ===
-    // Costs are running high, eating into margin and reserve
+    // === CASE 2: RISK PROJECT (Low CPI) ===
+    // Type: Fixed Price (Input Method)
+    // Logic: Costs are higher than progress warrants.
+    // Stats: Cost 36k, EV 30k -> CPI 0.83 (Bad)
     {
         id: 'p-risk-cpi',
         contractId: 'ctr2',
         title: 'Proyecto Migración Legacy (Riesgo CPI)',
         clientId: 'c2',
         status: 'In Progress',
-        type: 'TM',
+        type: 'Fixed', // Changed to Fixed to enforce CPI risk logic
         revenueMethod: 'Input',
         budget: 60000,
-        totalEstimatedCosts: 70000, // Updated Estimate > Budget (Ouch)
-        justifiedAmount: 30000,
+        totalEstimatedCosts: 70000, // Estimated High
+        justifiedAmount: 30000, // Fixed Revenue (EV)
         billedAmount: 25000,
         startDate: relativeDate(-3, 1),
         endDate: relativeDate(2, 1),
         isAdvance: false,
         budgetLines: [],
-        contingencyReserve: 10, // 10% Reserve (6k) - Critical for this scenario
+        contingencyReserve: 10,
         strategicScore: 65,
         strategicBreakdown: { alignment: 20, innovation: 10, customerImpact: 20, viability: 15 },
         team: [{ ...MOCK_RESOURCES[0] }],
     },
 
-    // === CASE 3: INTERNAL R&D (No Revenue) ===
-    // Pure cost center
+    // === CASE 3: INTERNAL (Investment) ===
+    // Type: Internal
+    // Logic: 0 Revenue, All Cost.
     {
         id: 'p-internal',
         title: 'Iniciativa I+D GenAI',
@@ -122,34 +127,37 @@ export const MOCK_PROJECTS: Project[] = [
     },
 
     // === CASE 4: SCHEDULE RISK (Late) ===
-    // Fixed Price, Deadline passed
+    // Type: Fixed Price (Output/Milestones)
+    // Logic: Milestones 70% done -> Rev 59.5k. Cost 38k.
+    // Schedule: End Date passed! SPI low.
     {
         id: 'p-risk-schedule',
         contractId: 'ctr1',
         title: 'Implementación ERP (Retrasado)',
         clientId: 'c1',
-        status: 'In Progress',
+        status: 'In Progress', // Should be closed but it's late
         type: 'Fixed',
         revenueMethod: 'Output',
         budget: 85000,
-        justifiedAmount: 60000, // 70% done
+        justifiedAmount: 59500, // Exactly 70% of 85k
         billedAmount: 60000,
         startDate: relativeDate(-8, 1),
         endDate: relativeDate(-1, 1), // Ended last month!
         isAdvance: false,
         budgetLines: [],
         milestones: [
-            { id: 'm1', name: 'Diseño', percentage: 30, completed: true, actualDate: relativeDate(-7) },
-            { id: 'm2', name: 'Desarrollo', percentage: 40, completed: true, actualDate: relativeDate(-2) },
-            { id: 'm3', name: 'UAT y Despliegue', percentage: 30, completed: false } // Late
+            { id: 'm1', name: 'Diseño', percentage: 30, completed: true, actualDate: relativeDate(-7), targetDate: relativeDate(-7) },
+            { id: 'm2', name: 'Desarrollo', percentage: 40, completed: true, actualDate: relativeDate(-2), targetDate: relativeDate(-3) }, // Late
+            { id: 'm3', name: 'UAT y Despliegue', percentage: 30, completed: false, targetDate: relativeDate(-1) } // Overdue
         ],
         contingencyReserve: 8,
         strategicScore: 80,
         strategicBreakdown: { alignment: 25, innovation: 15, customerImpact: 25, viability: 15 },
     },
 
-    // === CASE 5: STARTUP (Pre-billing) ===
-    // Just started, advances invoiced
+    // === CASE 5: STARTUP (Deferred Revenue) ===
+    // Type: Fixed (Linear)
+    // Logic: Future start. Billed advance.
     {
         id: 'p-deferred',
         contractId: 'ctr1',
@@ -159,11 +167,12 @@ export const MOCK_PROJECTS: Project[] = [
         type: 'Fixed',
         revenueMethod: 'Linear',
         budget: 40000,
-        justifiedAmount: 0, // No work done yet
-        billedAmount: 20000, // 50% Advance
-        startDate: relativeDate(1, 1), // Starts next month
+        justifiedAmount: 0,
+        billedAmount: 20000,
+        startDate: relativeDate(1, 1),
         isAdvance: true,
         budgetLines: [],
+        linearMonthlyAmount: 4000, // 10 months
         billingForecast: [
             { id: 'f1', date: relativeDate(0), amount: 20000, isAdvance: true, notes: 'Pago Inicial 50%' },
             { id: 'f2', date: relativeDate(3), amount: 20000, isAdvance: false, notes: 'Pago Final' }
@@ -173,7 +182,8 @@ export const MOCK_PROJECTS: Project[] = [
     },
 
     // === CASE 6: HIGH WIP (Underbilled) ===
-    // Work done but not invoiced
+    // Type: Time & Materials
+    // Logic: Rev 45k (worked), Billed 5k.
     {
         id: 'p-risk-wip',
         contractId: 'ctr1',
@@ -184,8 +194,8 @@ export const MOCK_PROJECTS: Project[] = [
         revenueMethod: 'Input',
         budget: 120000,
         totalEstimatedCosts: 60000,
-        justifiedAmount: 45000, // Revenue Recognized
-        billedAmount: 5000,     // Only 5k billed -> 40k WIP Asset
+        justifiedAmount: 45000,
+        billedAmount: 5000,
         startDate: relativeDate(-3, 1),
         endDate: relativeDate(6, 1),
         isAdvance: false,
