@@ -119,7 +119,13 @@ export const en: LocaleKeys = {
                 alignment: 'Strategic Alignment (OKRs)',
                 innovation: 'Innovation & Market',
                 customerImpact: 'Customer Impact (Tier 1)',
-                viability: 'Viability & Risk'
+                viability: 'Viability & Risk',
+                tooltips: {
+                    alignment: 'Degree of contribution to key objectives and alignment with long-term vision.',
+                    innovation: 'Potential to generate new market opportunities, IP, or competitive advantages.',
+                    customerImpact: 'Perceived customer value, business criticality, and loyalty potential (Tier 1).',
+                    viability: 'Technical and operational feasibility. Evaluates complexity, resources, and risks.'
+                }
             }
         },
         detail: {
