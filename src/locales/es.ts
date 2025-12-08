@@ -21,7 +21,10 @@ export const es = {
         yearly: 'Anual',
         reset: 'Reset',
         all: 'Todo',
-        perMonth: 'Por Mes'
+        perMonth: 'Por Mes',
+        update: 'Actualizar',
+        import: 'Importar',
+        file: 'Archivo'
     },
     nav: {
         dashboard: 'Panel de Control',
@@ -221,6 +224,19 @@ export const es = {
             billWip: 'Facturar WIP',
             downloadPdf: 'Descargar PDF'
         }
+    },
+    resources: {
+        title: 'Recursos y Tarifas',
+        add: 'Nuevo Recurso',
+        importCsv: 'Importar CSV',
+        name: 'Nombre',
+        role: 'Rol',
+        costRate: 'Coste Hora (€)',
+        billRate: 'Tarifa Venta (€)',
+        margin: 'Margen',
+        actions: 'Acciones',
+        successImport: 'Recursos importados: ',
+        errorImport: 'Error al importar CSV. Formato: name,role,costRate,billRate'
     },
     eac: {
         title: 'Análisis EAC',

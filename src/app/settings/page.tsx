@@ -12,6 +12,7 @@ import { AlertTriangle, Database, Trash2, RefreshCw, FlaskConical, User, History
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Pencil, Upload } from 'lucide-react';
 
 export default function SettingsPage() {
     const { logout } = useAuth();
@@ -23,6 +24,7 @@ export default function SettingsPage() {
     const [resources, setResources] = useState<Resource[]>([]);
     const [newResource, setNewResource] = useState<Partial<Resource>>({});
     const [isAddingResource, setIsAddingResource] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     // Changelog State
     const [changes, setChanges] = useState<SystemChange[]>([]);
@@ -98,6 +100,66 @@ export default function SettingsPage() {
         setNewResource({});
         setIsAddingResource(false);
         loadResources();
+    };
+
+
+
+    const handleEditResource = (resource: Resource) => {
+        setNewResource(resource);
+        setIsEditing(true);
+        setIsAddingResource(true);
+        // Scroll to form if needed
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCsvImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target?.result as string;
+            if (!text) return;
+
+            const lines = text.split('\n');
+            // Basic validation: Check if header exists or assume order: name,role,costRate,billRate
+            // Skipping first line if it contains "name" or "nombre"
+            const startIndex = lines[0].toLowerCase().includes('name') || lines[0].toLowerCase().includes('nombre') ? 1 : 0;
+
+            let count = 0;
+            for (let i = startIndex; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const cols = line.split(',');
+                if (cols.length >= 4) {
+                    const [name, role, costRate, billRate] = cols.map(c => c.trim());
+                    if (name && costRate && billRate) {
+                        const newRes: Resource = {
+                            id: crypto.randomUUID(),
+                            name,
+                            role: role || 'Consultor',
+                            costRate: Number(costRate),
+                            billRate: Number(billRate),
+                            currency: 'EUR',
+                            active: true
+                        };
+                        resourceService.saveResource(newRes);
+                        count++;
+                    }
+                }
+            }
+
+            if (count > 0) {
+                setMessage(`¡Éxito! ${count} recursos importados.`);
+                loadResources();
+            } else {
+                setMessage('Error al importar. Formato requerido: name,role,costRate,billRate');
+            }
+        };
+        reader.readAsText(file);
+        // Reset input
+        event.target.value = '';
     };
 
     const handleDeleteResource = (id: string) => {
@@ -244,11 +306,29 @@ export default function SettingsPage() {
                                 </CardTitle>
                                 <CardDescription>Gestiona el coste y tarifa de venta de los perfiles.</CardDescription>
                             </div>
-                            <Button size="sm" onClick={() => setIsAddingResource(true)}><Plus className="h-4 w-4 mr-2" /> Nuevo Recurso</Button>
+                            <div className="flex gap-2">
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        accept=".csv"
+                                        onChange={handleCsvImport}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        title="Importar CSV (name,role,cost,bill)"
+                                    />
+                                    <Button variant="outline" size="sm">
+                                        <Upload className="h-4 w-4 mr-2" />
+                                        Importar CSV
+                                    </Button>
+                                </div>
+                                <Button size="sm" onClick={() => { setIsAddingResource(true); setIsEditing(false); setNewResource({}); }}>
+                                    <Plus className="h-4 w-4 mr-2" /> Nuevo
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {isAddingResource && (
                                 <div className="mb-6 p-4 border rounded-md bg-slate-50 space-y-4">
+                                    <h3 className="font-semibold text-sm text-slate-700 mb-2">{isEditing ? 'Editar Recurso' : 'Nuevo Recurso'}</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="space-y-2">
                                             <Label>Nombre</Label>
@@ -268,8 +348,8 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
                                     <div className="flex justify-end gap-2">
-                                        <Button variant="ghost" onClick={() => setIsAddingResource(false)}>Cancelar</Button>
-                                        <Button onClick={handleAddResource}>Guardar</Button>
+                                        <Button variant="ghost" onClick={() => { setIsAddingResource(false); setIsEditing(false); setNewResource({}); }}>Cancelar</Button>
+                                        <Button onClick={handleAddResource}>{isEditing ? 'Actualizar' : 'Guardar'}</Button>
                                     </div>
                                 </div>
                             )}
@@ -296,7 +376,10 @@ export default function SettingsPage() {
                                                     <td className="p-3 text-right">{r.costRate} €</td>
                                                     <td className="p-3 text-right font-medium">{r.billRate} €</td>
                                                     <td className="p-3 text-right text-green-600 font-bold">{margin}%</td>
-                                                    <td className="p-3 text-right">
+                                                    <td className="p-3 text-right flex justify-end gap-1">
+                                                        <Button variant="ghost" size="sm" onClick={() => handleEditResource(r)} className="text-blue-500 hover:text-blue-700 h-8 w-8 p-0">
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button>
                                                         <Button variant="ghost" size="sm" onClick={() => handleDeleteResource(r.id)} className="text-red-500 hover:text-red-700 h-8 w-8 p-0">
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>

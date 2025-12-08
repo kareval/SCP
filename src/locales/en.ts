@@ -23,7 +23,10 @@ export const en: LocaleKeys = {
         yearly: 'Yearly',
         reset: 'Reset',
         all: 'All',
-        perMonth: 'Per Month'
+        perMonth: 'Per Month',
+        update: 'Update',
+        import: 'Import',
+        file: 'File'
     },
     nav: {
         dashboard: 'Dashboard',
@@ -223,6 +226,19 @@ export const en: LocaleKeys = {
             billWip: 'Bill WIP',
             downloadPdf: 'Download PDF'
         }
+    },
+    resources: {
+        title: 'Resources & Rates',
+        add: 'New Resource',
+        importCsv: 'Import CSV',
+        name: 'Name',
+        role: 'Role',
+        costRate: 'Cost Rate (€)',
+        billRate: 'Bill Rate (€)',
+        margin: 'Margin',
+        actions: 'Actions',
+        successImport: 'Resources imported: ',
+        errorImport: 'Error importing CSV. Format: name,role,costRate,billRate'
     },
     eac: {
         title: 'EAC Analysis',
