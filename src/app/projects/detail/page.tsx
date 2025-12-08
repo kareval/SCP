@@ -452,7 +452,7 @@ function ProjectDetailsContent() {
             {/* Tabs */}
             <div className="border-b border-aux-grey">
                 <nav className="-mb-px flex space-x-8">
-                    {(['activity', 'billing', 'eac', 'strategic', 'details'] as const).map(tabKey => (
+                    {(['activity', 'billing', 'eac', 'strategic', 'costs', 'details'] as const).map(tabKey => (
                         <button key={tabKey} onClick={() => setActiveTab(tabKey)} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize ${activeTab === tabKey ? 'border-primary text-primary' : 'border-transparent text-primary-dark/60 hover:text-primary-dark'}`}>{t(`projects.detail.tabs.${tabKey}`)}</button>
                     ))}
                 </nav>
@@ -616,6 +616,7 @@ function ProjectDetailsContent() {
                 <EACDashboard initialProject={project} initialLogs={workLogs} />
             )}
 
+
             {/* Tab: Strategic */}
             {activeTab === 'strategic' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
@@ -693,6 +694,131 @@ function ProjectDetailsContent() {
                         </CardContent>
                     </Card>
                 </div>
+            )}
+
+            {/* Tab: Cost Breakdown (NEW) */}
+            {activeTab === 'costs' && (
+                <Card>
+                    <div className="p-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="text-lg font-semibold text-slate-900">{t('projects.detail.tabs.costs')}</h3>
+                                <p className="text-sm text-slate-500">
+                                    {t('eac.sumCosts')}: <span className="font-mono font-medium text-slate-900">
+                                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
+                                            workLogs.reduce((sum, log) => sum + (log.costAmount || 0), 0)
+                                        )}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="border rounded-md overflow-hidden">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+                                    <tr>
+                                        <th className="py-3 px-4">{t('projects.detail.costs.resource')}</th>
+                                        <th className="py-3 px-4">{t('projects.detail.costs.role')}</th>
+                                        <th className="py-3 px-4 text-right">{t('projects.detail.costs.hours')}</th>
+                                        <th className="py-3 px-4 text-right">{t('projects.detail.costs.avgRate')}</th>
+                                        <th className="py-3 px-4 text-right">{t('projects.detail.costs.totalCost')}</th>
+                                        <th className="py-3 px-4 text-right">{t('projects.detail.costs.percent')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {(() => {
+                                        const totalProjectCost = workLogs.reduce((sum, log) => sum + (log.costAmount || 0), 0);
+
+                                        // Aggregate by Resource ID
+                                        const costByResource = workLogs.reduce((acc, log) => {
+                                            const resId = log.resourceId || 'unknown';
+                                            if (!acc[resId]) {
+                                                acc[resId] = {
+                                                    id: resId,
+                                                    name: 'Unknown',
+                                                    role: '-',
+                                                    hours: 0,
+                                                    cost: 0
+                                                };
+                                                // Try to find resource snapshot or simple lookup
+                                                const projectRes = project?.team?.find(r => r.id === resId);
+                                                const globalRes = resources.find(r => r.id === resId);
+                                                const res = projectRes || globalRes;
+
+                                                if (res) {
+                                                    acc[resId].name = res.name;
+                                                    acc[resId].role = res.role;
+                                                } else {
+                                                    // Should ideally look up in global resources if available, 
+                                                    // but adhering to "Project Details" scope, we use what we have or 'Unknown'
+                                                    // If log has resourceName extended prop (it doesn't in type currently), could use that.
+                                                    // For now, let's mark it clearly.
+                                                    acc[resId].name = t('projects.detail.costs.unknownResource') + (resId !== 'unknown' ? ` (${resId.substring(0, 4)})` : '');
+                                                }
+                                            }
+                                            acc[resId].hours += log.hours || 0;
+                                            acc[resId].cost += (log.costAmount || 0);
+                                            return acc;
+                                        }, {} as Record<string, { id: string, name: string, role: string, hours: number, cost: number }>);
+
+                                        const sortedResources = Object.values(costByResource).sort((a, b) => b.cost - a.cost);
+
+                                        if (sortedResources.length === 0) {
+                                            return (
+                                                <tr>
+                                                    <td colSpan={6} className="py-8 text-center text-slate-500 italic">
+                                                        {t('projects.detail.costs.noData')}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+
+                                        return sortedResources.map((res) => {
+                                            const avgRate = res.hours > 0 ? res.cost / res.hours : 0;
+                                            const percent = totalProjectCost > 0 ? (res.cost / totalProjectCost) * 100 : 0;
+
+                                            return (
+                                                <tr key={res.id} className="hover:bg-slate-50/50">
+                                                    <td className="py-3 px-4 font-medium text-slate-800">{res.name}</td>
+                                                    <td className="py-3 px-4 text-slate-500 text-xs">{res.role}</td>
+                                                    <td className="py-3 px-4 text-right font-mono text-slate-600">{res.hours.toFixed(1)} h</td>
+                                                    <td className="py-3 px-4 text-right font-mono text-slate-500 text-xs">{avgRate.toFixed(2)} €/h</td>
+                                                    <td className="py-3 px-4 text-right font-bold font-mono text-slate-900">
+                                                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(res.cost)}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <span className="text-xs font-medium text-slate-600">{percent.toFixed(1)}%</span>
+                                                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${percent}%` }}></div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        });
+                                    })()}
+                                </tbody>
+                                {/* Footer Total */}
+                                <tfoot className="bg-slate-50 font-semibold text-slate-900 border-t border-slate-200">
+                                    <tr>
+                                        <td className="py-3 px-4" colSpan={2}>{t('dashboard.table.total')}</td>
+                                        <td className="py-3 px-4 text-right font-mono">
+                                            {workLogs.reduce((sum, log) => sum + (log.hours || 0), 0).toFixed(1)} h
+                                        </td>
+                                        <td className="py-3 px-4"></td>
+                                        <td className="py-3 px-4 text-right font-mono text-blue-700">
+                                            {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
+                                                workLogs.reduce((sum, log) => sum + (log.costAmount || 0), 0)
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-4"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </Card>
             )}
 
             {/* Tab: Details / Team */}

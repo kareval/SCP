@@ -132,7 +132,18 @@ export const es = {
                 billing: 'Facturación',
                 eac: 'Análisis EAC',
                 strategic: 'Visión Estratégica',
+                costs: 'Desgl. Costes',
                 details: 'Detalles del Proyecto'
+            },
+            costs: {
+                resource: 'Recurso',
+                role: 'Rol',
+                hours: 'Horas',
+                avgRate: 'Coste Medio/h',
+                totalCost: 'Coste Total',
+                percent: '% del Total',
+                noData: 'No hay costes imputados',
+                unknownResource: 'Recurso Desconocido'
             },
             activity: {
                 register: 'Registrar Actividad',

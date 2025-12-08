@@ -134,7 +134,18 @@ export const en: LocaleKeys = {
                 billing: 'Billing',
                 eac: 'EAC Analysis',
                 strategic: 'Strategic Vision',
+                costs: 'Cost Breakdown',
                 details: 'Project Details'
+            },
+            costs: {
+                resource: 'Resource',
+                role: 'Role',
+                hours: 'Hours',
+                avgRate: 'Avg Cost Rate',
+                totalCost: 'Total Cost',
+                percent: '% of Total',
+                noData: 'No costs recorded',
+                unknownResource: 'Unknown Resource'
             },
             activity: {
                 register: 'Log Activity',
