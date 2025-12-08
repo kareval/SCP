@@ -28,6 +28,7 @@ import { calculateProjectRevenue } from '@/utils/calculations';
 import EACDashboard from '@/components/EACDashboard';
 import { useTranslation } from '@/context/LanguageContext';
 import { Label } from '@/components/ui/label';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 // Simple Badge Component for Margin
 const MarginBadge = ({ value }: { value: number }) => {
@@ -531,23 +532,80 @@ function ProjectDetailsContent() {
 
             {/* Tab: Strategic */}
             {activeTab === 'strategic' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                        <CardHeader><CardTitle>Alineación Estratégica</CardTitle></CardHeader>
-                        <CardContent className="flex flex-col items-center justify-center p-6">
-                            <Target className="h-16 w-16 text-primary mb-4" />
-                            <div className="text-4xl font-bold text-primary-dark">{project.strategicScore ?? 0}/100</div>
-                            <p className="text-sm text-slate-500 mt-2">Puntuación Global</p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
+                    <Card className="h-full flex flex-col">
+                        <CardHeader>
+                            <CardTitle>Alineación Estratégica</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-1 flex flex-col items-center justify-center p-6">
+                            <div className="flex flex-col items-center mb-8">
+                                <Target className="h-16 w-16 text-primary mb-4" />
+                                <div className="text-6xl font-bold text-primary-dark tracking-tight">
+                                    {project.strategicScore ?? 0}
+                                    <span className="text-2xl text-slate-400 font-normal ml-1">/100</span>
+                                </div>
+                                <p className="text-sm font-medium text-slate-500 uppercase tracking-widest mt-2">Puntuación Global</p>
+                            </div>
+
+                            <div className="w-full grid grid-cols-2 gap-4">
+                                {project.strategicBreakdown && Object.entries(project.strategicBreakdown).map(([key, val]) => {
+                                    const max = (key === 'alignment' || key === 'innovation') ? 30 : 20;
+                                    const ratio = (val / max) * 100;
+                                    return (
+                                        <div key={key} className="flex flex-col p-3 bg-slate-50 rounded-lg border border-slate-100 relative overflow-hidden group hover:border-primary/20 transition-colors">
+                                            <div className="absolute bottom-0 left-0 h-1 bg-primary/10 w-full">
+                                                <div className="h-full bg-primary" style={{ width: `${ratio}%` }}></div>
+                                            </div>
+                                            <span className="text-[10px] uppercase text-slate-500 font-bold truncate mb-1" title={t(`projects.form.criteria.${key}`)}>
+                                                {t(`projects.form.criteria.${key}`)}
+                                            </span>
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-xl font-bold text-primary-dark">{val}</span>
+                                                <span className="text-xs text-slate-400">/{max}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </CardContent>
                     </Card>
-                    <div className="grid grid-cols-2 gap-4">
-                        {project.strategicBreakdown ? Object.entries(project.strategicBreakdown).map(([key, val]) => (
-                            <Card key={key}>
-                                <CardHeader className="pb-2"><CardTitle className="text-xs uppercase text-slate-400">{t(`projects.strategic.${key}`)}</CardTitle></CardHeader>
-                                <CardContent><div className="text-2xl font-bold">{val}</div></CardContent>
-                            </Card>
-                        )) : <div className="col-span-2 text-center text-slate-400">Sin datos estratégicos</div>}
-                    </div>
+
+                    <Card className="h-full flex flex-col">
+                        <CardHeader>
+                            <CardTitle>Radar de Competencias</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-1 min-h-[400px]">
+                            {project.strategicBreakdown ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
+                                        { subject: t('projects.form.criteria.alignment'), A: (project.strategicBreakdown.alignment / 30) * 100, raw: project.strategicBreakdown.alignment, max: 30, fullMark: 100 },
+                                        { subject: t('projects.form.criteria.innovation'), A: (project.strategicBreakdown.innovation / 30) * 100, raw: project.strategicBreakdown.innovation, max: 30, fullMark: 100 },
+                                        { subject: t('projects.form.criteria.customerImpact'), A: (project.strategicBreakdown.customerImpact / 20) * 100, raw: project.strategicBreakdown.customerImpact, max: 20, fullMark: 100 },
+                                        { subject: t('projects.form.criteria.viability'), A: (project.strategicBreakdown.viability / 20) * 100, raw: project.strategicBreakdown.viability, max: 20, fullMark: 100 },
+                                    ]}>
+                                        <PolarGrid stroke="#e2e8f0" />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                                        <Radar
+                                            name="Puntuación"
+                                            dataKey="A"
+                                            stroke="#ef4444"
+                                            fill="#ef4444"
+                                            fillOpacity={0.4}
+                                        />
+                                        <RechartsTooltip
+                                            formatter={(value: number, name: string, props: any) => [`${props.payload.raw} / ${props.payload.max}`, 'Puntuación Real']}
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                                        />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full flex items-center justify-center text-slate-400">
+                                    No hay datos suficientes para visualizar
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             )}
 

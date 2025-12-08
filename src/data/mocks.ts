@@ -90,6 +90,8 @@ export const MOCK_PROJECTS: Project[] = [
         endDate: relativeDate(3, 30),
         isAdvance: false,
         budgetLines: [],
+        strategicScore: 60,
+        strategicBreakdown: { alignment: 20, innovation: 10, customerImpact: 15, viability: 15 },
     },
 
     // === CASE 3: Internal Project (No Revenue) ===
@@ -107,6 +109,8 @@ export const MOCK_PROJECTS: Project[] = [
         startDate: relativeDate(-2, 1),
         isAdvance: false,
         budgetLines: [],
+        strategicScore: 90,
+        strategicBreakdown: { alignment: 25, innovation: 25, customerImpact: 20, viability: 20 },
     },
 
     // === CASE 4: Project with Team & Override Rates ===
@@ -130,6 +134,8 @@ export const MOCK_PROJECTS: Project[] = [
             { ...MOCK_RESOURCES[0], overrideCostRate: 70, overrideBillRate: 140 }, // Senior with premium rate
             { ...MOCK_RESOURCES[3] }, // Developer with global rates
         ] as ProjectResource[],
+        strategicScore: 75,
+        strategicBreakdown: { alignment: 20, innovation: 20, customerImpact: 20, viability: 15 },
     },
 
     // === CASE 5: Project with Baseline (Budget Changed) ===
@@ -155,6 +161,8 @@ export const MOCK_PROJECTS: Project[] = [
             endDate: relativeDate(4, 30), // Original end was earlier
             totalEstimatedCosts: 60000,
         } as ProjectBaseline,
+        strategicScore: 70,
+        strategicBreakdown: { alignment: 20, innovation: 15, customerImpact: 20, viability: 15 },
     },
 
     // === CASE 6: Output-based Project (Milestones) ===
@@ -179,6 +187,8 @@ export const MOCK_PROJECTS: Project[] = [
             { id: 'm3', name: 'Desarrollo Fase 2', percentage: 30, completed: false },
             { id: 'm4', name: 'Testing y Go-Live', percentage: 30, completed: false },
         ],
+        strategicScore: 65,
+        strategicBreakdown: { alignment: 15, innovation: 20, customerImpact: 15, viability: 15 },
     },
 
     // === CASE 7: Advance/Deferred Revenue ===
@@ -196,6 +206,8 @@ export const MOCK_PROJECTS: Project[] = [
         startDate: relativeDate(1, 1),
         isAdvance: true,
         budgetLines: [],
+        strategicScore: 50,
+        strategicBreakdown: { alignment: 15, innovation: 10, customerImpact: 15, viability: 10 },
     },
 ];
 

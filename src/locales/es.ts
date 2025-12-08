@@ -31,6 +31,7 @@ export const es = {
         settings: 'Configuración'
     },
     dashboard: {
+        strategicPortfolio: 'Cartera Estratégica',
         financialTab: 'Visión Financiera',
         strategicTab: 'Visión Estratégica',
         billingTrend: 'Tendencia de Facturación (6 meses)',

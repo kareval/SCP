@@ -33,6 +33,7 @@ export const en: LocaleKeys = {
         settings: 'Settings'
     },
     dashboard: {
+        strategicPortfolio: 'Strategic Portfolio',
         financialTab: 'Financial Overview',
         strategicTab: 'Strategic Overview',
         billingTrend: 'Billing Trend (6 months)',
