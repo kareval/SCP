@@ -2,6 +2,15 @@ import { SystemChange } from '@/types';
 
 const CHANGES: SystemChange[] = [
     {
+        id: '1.2.3',
+        date: new Date().toISOString(),
+        version: '1.2.3',
+        title: 'Mejora de Visibilidad Financiera',
+        description: 'Desglose detallado de "Presupuesto de Ventas" vs "Presupuesto Operativo" (sin riesgo). Nuevo gráfico comparativo de escenarios EAC (Optimista, Probable, Pesimista).',
+        reasoning: 'Proporcionar claridad total sobre el impacto de la reserva de contingencia y visualizar el riesgo del proyecto.',
+        category: 'Feature'
+    },
+    {
         id: '1.2.2',
         date: '2025-12-08T19:30:00.000Z',
         version: '1.2.2',
