@@ -52,288 +52,222 @@ export const MOCK_RESOURCES: Resource[] = [
 
 // ============ PROJECTS ============
 export const MOCK_PROJECTS: Project[] = [
-    // === CASE 1: High Margin Project (>30%) ===
+    // === CASE 1: GOLDEN PATH (Success) ===
+    // High Margin, Ahead of Schedule, No Risks
     {
         id: 'p-high-margin',
         contractId: 'ctr1',
-        title: 'Proyecto Margen Alto',
-        clientId: 'c1',
-        status: 'In Progress',
-        type: 'TM',
-        revenueMethod: 'Input',
-        budget: 100000,
-        totalEstimatedCosts: 40000,
-        justifiedAmount: 50000, // 50% progress
-        billedAmount: 40000,
-        startDate: relativeDate(-4, 1),
-        endDate: relativeDate(2, 28),
-        isAdvance: false,
-        budgetLines: [],
-        strategicScore: 85,
-        strategicBreakdown: { alignment: 25, innovation: 25, customerImpact: 20, viability: 15 },
-    },
-
-    // === CASE 2: Low Margin Project (<15%) ===
-    {
-        id: 'p-low-margin',
-        contractId: 'ctr2',
-        title: 'Proyecto Margen Bajo',
-        clientId: 'c2',
-        status: 'In Progress',
-        type: 'TM',
-        revenueMethod: 'Input',
-        budget: 50000,
-        totalEstimatedCosts: 45000, // High cost relative to budget
-        justifiedAmount: 25000,
-        billedAmount: 20000,
-        startDate: relativeDate(-3, 1),
-        endDate: relativeDate(3, 30),
-        isAdvance: false,
-        budgetLines: [],
-        strategicScore: 60,
-        strategicBreakdown: { alignment: 20, innovation: 10, customerImpact: 15, viability: 15 },
-    },
-
-    // === CASE 3: Internal Project (No Revenue) ===
-    {
-        id: 'p-internal',
-        title: 'Proyecto Interno I+D',
-        clientId: 'c4',
-        status: 'In Progress',
-        type: 'Internal',
-        revenueMethod: 'Input',
-        budget: 0, // No budget/revenue
-        totalEstimatedCosts: 20000,
-        justifiedAmount: 0,
-        billedAmount: 0,
-        startDate: relativeDate(-2, 1),
-        isAdvance: false,
-        budgetLines: [],
-        strategicScore: 90,
-        strategicBreakdown: { alignment: 25, innovation: 25, customerImpact: 20, viability: 20 },
-    },
-
-    // === CASE 4: Project with Team & Override Rates ===
-    {
-        id: 'p-team-override',
-        contractId: 'ctr1',
-        title: 'Proyecto con Equipo Dedicado',
-        clientId: 'c1',
-        status: 'In Progress',
-        type: 'TM',
-        revenueMethod: 'Input',
-        budget: 80000,
-        totalEstimatedCosts: 50000,
-        justifiedAmount: 30000,
-        billedAmount: 25000,
-        startDate: relativeDate(-3, 1),
-        endDate: relativeDate(3, 28),
-        isAdvance: false,
-        budgetLines: [],
-        team: [
-            { ...MOCK_RESOURCES[0], overrideCostRate: 70, overrideBillRate: 140 }, // Senior with premium rate
-            { ...MOCK_RESOURCES[3] }, // Developer with global rates
-        ] as ProjectResource[],
-        strategicScore: 75,
-        strategicBreakdown: { alignment: 20, innovation: 20, customerImpact: 20, viability: 15 },
-    },
-
-    // === CASE 5: Project with Baseline (Budget Changed) ===
-    {
-        id: 'p-baseline',
-        contractId: 'ctr1',
-        title: 'Proyecto con Línea Base',
-        clientId: 'c1',
-        status: 'In Progress',
-        type: 'Fixed',
-        revenueMethod: 'Linear',
-        budget: 120000, // Current budget (increased)
-        justifiedAmount: 40000,
-        billedAmount: 30000,
-        startDate: relativeDate(-6, 1),
-        endDate: relativeDate(6, 30),
-        isAdvance: false,
-        budgetLines: [],
-        originalBaseline: {
-            capturedAt: relativeDate(-5, 1),
-            budget: 100000, // Original budget was 100k
-            startDate: relativeDate(-6, 1),
-            endDate: relativeDate(4, 30), // Original end was earlier
-            totalEstimatedCosts: 60000,
-        } as ProjectBaseline,
-        strategicScore: 70,
-        strategicBreakdown: { alignment: 20, innovation: 15, customerImpact: 20, viability: 15 },
-    },
-
-    // === CASE 6: Output-based Project (Milestones) ===
-    {
-        id: 'p-milestones',
-        contractId: 'ctr2',
-        title: 'Proyecto con Hitos',
-        clientId: 'c2',
-        status: 'In Progress',
-        type: 'Fixed',
-        revenueMethod: 'Output',
-        budget: 60000,
-        justifiedAmount: 24000, // 40% completed
-        billedAmount: 18000,
-        startDate: relativeDate(-4, 1),
-        endDate: relativeDate(4, 30),
-        isAdvance: false,
-        budgetLines: [],
-        milestones: [
-            { id: 'm1', name: 'Análisis y Diseño', percentage: 20, completed: true, actualDate: relativeDate(-2, 15) },
-            { id: 'm2', name: 'Desarrollo Fase 1', percentage: 20, completed: true, actualDate: relativeDate(-1, 20) },
-            { id: 'm3', name: 'Desarrollo Fase 2', percentage: 30, completed: false },
-            { id: 'm4', name: 'Testing y Go-Live', percentage: 30, completed: false },
-        ],
-        strategicScore: 65,
-        strategicBreakdown: { alignment: 15, innovation: 20, customerImpact: 15, viability: 15 },
-    },
-
-    // === CASE 7: Advance/Deferred Revenue ===
-    {
-        id: 'p-deferred',
-        contractId: 'ctr1',
-        title: 'Licenciamiento Futuro',
-        clientId: 'c1',
-        status: 'Budgeted',
-        type: 'Fixed',
-        revenueMethod: 'Linear',
-        budget: 50000,
-        justifiedAmount: 0,
-        billedAmount: 50000, // Billed in advance
-        startDate: relativeDate(1, 1),
-        isAdvance: true,
-        budgetLines: [],
-        strategicScore: 50,
-        strategicBreakdown: { alignment: 15, innovation: 10, customerImpact: 15, viability: 10 },
-    },
-
-    // === CASE 8: RISK - Low CPI (Critical) ===
-    {
-        id: 'p-risk-cpi',
-        contractId: 'ctr2',
-        title: 'Proyecto en Riesgo (Sobrecoste)',
-        clientId: 'c2',
-        status: 'In Progress',
-        type: 'TM',
-        revenueMethod: 'Input',
-        budget: 30000,
-        totalEstimatedCosts: 45000, // Updated: Estimate reflects the disaster (Runaway costs)
-        justifiedAmount: 0, // Will be calculated by system: (27k / 45k) * 30k = ~18k
-        billedAmount: 10000,
-        startDate: relativeDate(-3, 1),
-        endDate: relativeDate(3, 1),
-        isAdvance: false,
-        budgetLines: [],
-        contingencyReserve: 5,
-        strategicScore: 40,
-        strategicBreakdown: { alignment: 10, innovation: 10, customerImpact: 10, viability: 10 },
-    },
-
-    // === CASE 9: RISK - Schedule Overrun (Critical) ===
-    {
-        id: 'p-risk-schedule',
-        contractId: 'ctr1',
-        title: 'Proyecto Vencido',
-        clientId: 'c1',
-        status: 'In Progress', // Still active but past end date
-        type: 'Fixed',
-        revenueMethod: 'Output',
-        budget: 45000,
-        justifiedAmount: 40000,
-        billedAmount: 40000,
-        startDate: relativeDate(-6, 1),
-        endDate: relativeDate(-1, 1), // Ended last month
-        isAdvance: false,
-        budgetLines: [],
-        milestones: [
-            { id: 'm-ks-1', name: 'Hito Final', percentage: 100, completed: false } // Not done
-        ],
-        strategicScore: 60,
-        strategicBreakdown: { alignment: 15, innovation: 15, customerImpact: 15, viability: 15 },
-    },
-
-    // === CASE 10: RISK - High WIP (Billing Risk) ===
-    {
-        id: 'p-risk-wip',
-        contractId: 'ctr1',
-        title: 'Proyecto Alta Deuda (WIP)',
+        title: 'Proyecto Transformación Digital (Éxito)',
         clientId: 'c1',
         status: 'In Progress',
         type: 'TM',
         revenueMethod: 'Input',
         budget: 150000,
-        totalEstimatedCosts: 100000,
-        justifiedAmount: 45000, // Revenue Recognized
-        billedAmount: 5000,     // Billed very little -> High WIP (40k)
-        startDate: relativeDate(-2, 1),
-        endDate: relativeDate(10, 1),
+        totalEstimatedCosts: 80000,
+        justifiedAmount: 90000, // 60% Revenue
+        billedAmount: 85000,    // Good Cash Flow
+        startDate: relativeDate(-5, 1),
+        endDate: relativeDate(3, 28),
         isAdvance: false,
         budgetLines: [],
-        strategicScore: 80,
-        strategicBreakdown: { alignment: 20, innovation: 20, customerImpact: 20, viability: 20 },
+        contingencyReserve: 5, // 5% Reserve (Unused)
+        strategicScore: 92,
+        strategicBreakdown: { alignment: 28, innovation: 28, customerImpact: 18, viability: 18 },
+        expectedROI: 45.5,
+        team: [{ ...MOCK_RESOURCES[3], overrideBillRate: 110 }],
     },
+
+    // === CASE 2: RISK PROJECT (Low CPI & Reserve Usage) ===
+    // Costs are running high, eating into margin and reserve
+    {
+        id: 'p-risk-cpi',
+        contractId: 'ctr2',
+        title: 'Proyecto Migración Legacy (Riesgo CPI)',
+        clientId: 'c2',
+        status: 'In Progress',
+        type: 'TM',
+        revenueMethod: 'Input',
+        budget: 60000,
+        totalEstimatedCosts: 70000, // Updated Estimate > Budget (Ouch)
+        justifiedAmount: 30000,
+        billedAmount: 25000,
+        startDate: relativeDate(-3, 1),
+        endDate: relativeDate(2, 1),
+        isAdvance: false,
+        budgetLines: [],
+        contingencyReserve: 10, // 10% Reserve (6k) - Critical for this scenario
+        strategicScore: 65,
+        strategicBreakdown: { alignment: 20, innovation: 10, customerImpact: 20, viability: 15 },
+        team: [{ ...MOCK_RESOURCES[0] }],
+    },
+
+    // === CASE 3: INTERNAL R&D (No Revenue) ===
+    // Pure cost center
+    {
+        id: 'p-internal',
+        title: 'Iniciativa I+D GenAI',
+        clientId: 'c4',
+        status: 'In Progress',
+        type: 'Internal',
+        revenueMethod: 'Input',
+        budget: 0,
+        totalEstimatedCosts: 30000,
+        justifiedAmount: 0,
+        billedAmount: 0,
+        startDate: relativeDate(-2, 1),
+        isAdvance: false,
+        budgetLines: [],
+        strategicScore: 95,
+        strategicBreakdown: { alignment: 30, innovation: 30, customerImpact: 20, viability: 15 },
+    },
+
+    // === CASE 4: SCHEDULE RISK (Late) ===
+    // Fixed Price, Deadline passed
+    {
+        id: 'p-risk-schedule',
+        contractId: 'ctr1',
+        title: 'Implementación ERP (Retrasado)',
+        clientId: 'c1',
+        status: 'In Progress',
+        type: 'Fixed',
+        revenueMethod: 'Output',
+        budget: 85000,
+        justifiedAmount: 60000, // 70% done
+        billedAmount: 60000,
+        startDate: relativeDate(-8, 1),
+        endDate: relativeDate(-1, 1), // Ended last month!
+        isAdvance: false,
+        budgetLines: [],
+        milestones: [
+            { id: 'm1', name: 'Diseño', percentage: 30, completed: true, actualDate: relativeDate(-7) },
+            { id: 'm2', name: 'Desarrollo', percentage: 40, completed: true, actualDate: relativeDate(-2) },
+            { id: 'm3', name: 'UAT y Despliegue', percentage: 30, completed: false } // Late
+        ],
+        contingencyReserve: 8,
+        strategicScore: 80,
+        strategicBreakdown: { alignment: 25, innovation: 15, customerImpact: 25, viability: 15 },
+    },
+
+    // === CASE 5: STARTUP (Pre-billing) ===
+    // Just started, advances invoiced
+    {
+        id: 'p-deferred',
+        contractId: 'ctr1',
+        title: 'Consultoría Estratégica 2026',
+        clientId: 'c1',
+        status: 'Budgeted',
+        type: 'Fixed',
+        revenueMethod: 'Linear',
+        budget: 40000,
+        justifiedAmount: 0, // No work done yet
+        billedAmount: 20000, // 50% Advance
+        startDate: relativeDate(1, 1), // Starts next month
+        isAdvance: true,
+        budgetLines: [],
+        billingForecast: [
+            { id: 'f1', date: relativeDate(0), amount: 20000, isAdvance: true, notes: 'Pago Inicial 50%' },
+            { id: 'f2', date: relativeDate(3), amount: 20000, isAdvance: false, notes: 'Pago Final' }
+        ],
+        strategicScore: 88,
+        strategicBreakdown: { alignment: 25, innovation: 20, customerImpact: 25, viability: 18 },
+    },
+
+    // === CASE 6: HIGH WIP (Underbilled) ===
+    // Work done but not invoiced
+    {
+        id: 'p-risk-wip',
+        contractId: 'ctr1',
+        title: 'Mantenimiento Evolutivo (High WIP)',
+        clientId: 'c1',
+        status: 'In Progress',
+        type: 'TM',
+        revenueMethod: 'Input',
+        budget: 120000,
+        totalEstimatedCosts: 60000,
+        justifiedAmount: 45000, // Revenue Recognized
+        billedAmount: 5000,     // Only 5k billed -> 40k WIP Asset
+        startDate: relativeDate(-3, 1),
+        endDate: relativeDate(6, 1),
+        isAdvance: false,
+        budgetLines: [],
+        contingencyReserve: 3,
+        strategicScore: 70,
+        strategicBreakdown: { alignment: 20, innovation: 15, customerImpact: 20, viability: 15 },
+    }
 ];
 
 // ============ INVOICES ============
 export const MOCK_INVOICES: Invoice[] = [
+    // High Margin - Steady billing
     {
-        id: 'inv1', number: 'INV-001', date: relativeDate(-3),
+        id: 'inv1', number: 'INV-2024-001', date: relativeDate(-3),
         baseAmount: 40000, taxRate: 21, taxAmount: 8400, totalAmount: 48400,
-        projectId: 'p-high-margin', status: 'Paid', isAdvance: false, concept: 'Facturación Parcial'
+        projectId: 'p-high-margin', status: 'Paid', isAdvance: false, concept: 'Hito 1: Inicio'
     },
     {
-        id: 'inv2', number: 'INV-002', date: relativeDate(-2),
+        id: 'inv2', number: 'INV-2024-002', date: relativeDate(-1),
+        baseAmount: 45000, taxRate: 21, taxAmount: 9450, totalAmount: 54450,
+        projectId: 'p-high-margin', status: 'Sent', isAdvance: false, concept: 'Hito 2: Desarrollo'
+    },
+    // Risk CPI - Billing stopped due to issues? Or just normal billing?
+    {
+        id: 'inv3', number: 'INV-2024-003', date: relativeDate(-2),
+        baseAmount: 15000, taxRate: 21, taxAmount: 3150, totalAmount: 18150,
+        projectId: 'p-risk-cpi', status: 'Paid', isAdvance: false, concept: 'Mensualidad 1'
+    },
+    // Delivered but unpaid
+    {
+        id: 'inv4', number: 'INV-2024-004', date: relativeDate(-1),
+        baseAmount: 10000, taxRate: 21, taxAmount: 2100, totalAmount: 12100,
+        projectId: 'p-risk-cpi', status: 'Sent', isAdvance: false, concept: 'Mensualidad 2'
+    },
+    // Schedule Risk (Late project) - Billed almost everything
+    {
+        id: 'inv5', number: 'INV-2024-005', date: relativeDate(-6),
+        baseAmount: 30000, taxRate: 21, taxAmount: 6300, totalAmount: 36300,
+        projectId: 'p-risk-schedule', status: 'Paid', isAdvance: false, concept: 'Pago Inicial'
+    },
+    {
+        id: 'inv6', number: 'INV-2024-006', date: relativeDate(-2),
+        baseAmount: 30000, taxRate: 21, taxAmount: 6300, totalAmount: 36300,
+        projectId: 'p-risk-schedule', status: 'Paid', isAdvance: false, concept: 'Pago Intermedio'
+    },
+    // Deferred Revenue (Startup)
+    {
+        id: 'inv7', number: 'INV-2024-007', date: relativeDate(0),
         baseAmount: 20000, taxRate: 21, taxAmount: 4200, totalAmount: 24200,
-        projectId: 'p-low-margin', status: 'Paid', isAdvance: false, concept: 'Horas Mes Anterior'
+        projectId: 'p-deferred', status: 'Sent', isAdvance: true, concept: 'Anticipo 50%'
     },
+    // High WIP (Underbilled)
     {
-        id: 'inv3', number: 'INV-003', date: relativeDate(-1),
-        baseAmount: 25000, taxRate: 21, taxAmount: 5250, totalAmount: 30250,
-        projectId: 'p-team-override', status: 'Sent', isAdvance: false, concept: 'Sprint 1-2'
-    },
-    {
-        id: 'inv4', number: 'INV-004', date: relativeDate(-2),
-        baseAmount: 18000, taxRate: 21, taxAmount: 3780, totalAmount: 21780,
-        projectId: 'p-milestones', status: 'Paid', isAdvance: false, concept: 'Hito 1: Análisis'
-    },
-    {
-        id: 'inv5', number: 'INV-005', date: relativeDate(0),
-        baseAmount: 50000, taxRate: 21, taxAmount: 10500, totalAmount: 60500,
-        projectId: 'p-deferred', status: 'Sent', isAdvance: true, concept: 'Licencias Anticipadas'
-    },
+        id: 'inv8', number: 'INV-2024-008', date: relativeDate(-1),
+        baseAmount: 5000, taxRate: 21, taxAmount: 1050, totalAmount: 6050,
+        projectId: 'p-risk-wip', status: 'Paid', isAdvance: false, concept: 'Arranque'
+    }
 ];
 
 // ============ WORK LOGS (with Resource & Cost) ============
 export const MOCK_WORK_LOGS: WorkLog[] = [
-    // High Margin Project - Good ratio (Revenue 50k, Cost 20k = 60% margin)
-    { id: 'log-hm-1', projectId: 'p-high-margin', date: relativeDate(-3, 10), concept: 'Desarrollo módulo principal', amount: 25000, hours: 200, resourceId: 'res-4', costAmount: 9000 },
-    { id: 'log-hm-2', projectId: 'p-high-margin', date: relativeDate(-2, 10), concept: 'Integración APIs', amount: 25000, hours: 180, resourceId: 'res-4', costAmount: 8100 },
+    // === High Margin: Efficient Execution ===
+    // Revenue High, Cost Low
+    { id: 'log-hm-1', projectId: 'p-high-margin', date: relativeDate(-4, 10), concept: 'Arquitectura Base', amount: 20000, hours: 150, resourceId: 'res-3', costAmount: 12000 },
+    { id: 'log-hm-2', projectId: 'p-high-margin', date: relativeDate(-3, 15), concept: 'Desarrollo Core', amount: 30000, hours: 250, resourceId: 'res-4', costAmount: 11250 },
+    { id: 'log-hm-3', projectId: 'p-high-margin', date: relativeDate(-1, 20), concept: 'Integración', amount: 40000, hours: 300, resourceId: 'res-4', costAmount: 13500 },
 
-    // Low Margin Project - Poor ratio (Revenue 25k, Cost 20k = 20% margin)
-    { id: 'log-lm-1', projectId: 'p-low-margin', date: relativeDate(-2, 10), concept: 'Desarrollo complejo', amount: 12500, hours: 180, resourceId: 'res-1', costAmount: 10800 },
-    { id: 'log-lm-2', projectId: 'p-low-margin', date: relativeDate(-1, 10), concept: 'Correcciones urgentes', amount: 12500, hours: 160, resourceId: 'res-1', costAmount: 9600 },
+    // === Risk CPI: Disaster ===
+    // Revenue Low, Cost Huge (Rework)
+    { id: 'log-rc-1', projectId: 'p-risk-cpi', date: relativeDate(-2, 10), concept: 'Intento de Migración 1', amount: 10000, hours: 300, resourceId: 'res-1', costAmount: 18000 }, // Cost 18k, Rev 10k!
+    { id: 'log-rc-2', projectId: 'p-risk-cpi', date: relativeDate(-1, 5), concept: 'Bugfixing Crítico', amount: 5000, hours: 200, resourceId: 'res-1', costAmount: 12000 }, // Cost 12k, Rev 5k!
+    { id: 'log-rc-3', projectId: 'p-risk-cpi', date: relativeDate(0, 1), concept: 'Soporte Emergencia', amount: 5000, hours: 100, resourceId: 'res-1', costAmount: 6000 },
 
-    // Internal Project - Only Cost, No Revenue
-    { id: 'log-int-1', projectId: 'p-internal', date: relativeDate(-1, 10), concept: 'Investigación I+D', amount: 0, hours: 80, resourceId: 'res-4', costAmount: 3600 },
-    { id: 'log-int-2', projectId: 'p-internal', date: relativeDate(0, 5), concept: 'Prototipo IA', amount: 0, hours: 100, resourceId: 'res-2', costAmount: 3000 },
+    // === Internal: Pure Cost ===
+    { id: 'log-int-1', projectId: 'p-internal', date: relativeDate(-1, 10), concept: 'Investigación', amount: 0, hours: 100, resourceId: 'res-4', costAmount: 4500 },
+    { id: 'log-int-2', projectId: 'p-internal', date: relativeDate(0, 5), concept: 'PoC Development', amount: 0, hours: 200, resourceId: 'res-4', costAmount: 9000 },
 
-    // Team Override Project - Uses custom rates
-    { id: 'log-to-1', projectId: 'p-team-override', date: relativeDate(-2, 10), concept: 'Consultoría Senior (Override)', amount: 14000, hours: 100, resourceId: 'res-1', costAmount: 7000 }, // 140 bill, 70 cost
-    { id: 'log-to-2', projectId: 'p-team-override', date: relativeDate(-1, 10), concept: 'Desarrollo', amount: 16000, hours: 170, resourceId: 'res-4', costAmount: 7650 }, // Standard 90/45
-
-    // Baseline Project
-    { id: 'log-bl-1', projectId: 'p-baseline', date: relativeDate(-4, 10), concept: 'Fase Inicial', amount: 20000, hours: 150, resourceId: 'res-3', costAmount: 12000 },
-    { id: 'log-bl-2', projectId: 'p-baseline', date: relativeDate(-2, 10), concept: 'Desarrollo Core', amount: 20000, hours: 200, resourceId: 'res-4', costAmount: 9000 },
-
-    // Milestones Project - No logs (revenue from milestones)
-
-    // Risk CPI Project - High Costs (AC)
-    { id: 'log-rc-1', projectId: 'p-risk-cpi', date: relativeDate(-2, 10), concept: 'Desarrollo excesivo', amount: 10000, hours: 200, resourceId: 'res-4', costAmount: 18000 },
-    { id: 'log-rc-2', projectId: 'p-risk-cpi', date: relativeDate(-1, 5), concept: 'Rework no planificado', amount: 5000, hours: 100, resourceId: 'res-4', costAmount: 9000 },
-    // Total AC = 27000 vs EV = 20000 -> CPI = 0.74 (Critical)
+    // === High WIP: Work Done, Not Billed ===
+    { id: 'log-wip-1', projectId: 'p-risk-wip', date: relativeDate(-2, 10), concept: 'Sprint 1', amount: 15000, hours: 150, resourceId: 'res-4', costAmount: 6750 },
+    { id: 'log-wip-2', projectId: 'p-risk-wip', date: relativeDate(-1, 10), concept: 'Sprint 2', amount: 15000, hours: 150, resourceId: 'res-4', costAmount: 6750 },
+    { id: 'log-wip-3', projectId: 'p-risk-wip', date: relativeDate(0, 5), concept: 'Sprint 3', amount: 15000, hours: 150, resourceId: 'res-4', costAmount: 6750 },
 ];
 
 // ============ SEED FUNCTION ============

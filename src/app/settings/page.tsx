@@ -156,33 +156,29 @@ export default function SettingsPage() {
                             <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
                                 <h4 className="font-semibold text-blue-800 mb-3">📋 Casos de Prueba Generados:</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                    <div className="bg-white p-3 rounded border border-blue-100">
-                                        <span className="font-bold text-green-700">1. Margen Alto (&gt;30%)</span>
-                                        <p className="text-slate-600">T&M con costes bajos. Demuestra badge verde.</p>
+                                    <div className="bg-white p-3 rounded border border-green-200">
+                                        <span className="font-bold text-green-700">1. Golden Path (Éxito)</span>
+                                        <p className="text-slate-600">Margen &gt; 30%, adelantado y sin riesgos. El caso ideal.</p>
                                     </div>
-                                    <div className="bg-white p-3 rounded border border-blue-100">
-                                        <span className="font-bold text-red-700">2. Margen Bajo (&lt;15%)</span>
-                                        <p className="text-slate-600">T&M con costes altos. Demuestra badge rojo.</p>
+                                    <div className="bg-white p-3 rounded border border-red-200">
+                                        <span className="font-bold text-red-700">2. Riesgo Financiero (CPI)</span>
+                                        <p className="text-slate-600">Costes disparados, consumiendo reserva. CPI bajo.</p>
                                     </div>
-                                    <div className="bg-white p-3 rounded border border-blue-100">
-                                        <span className="font-bold text-orange-700">3. Proyecto Interno</span>
-                                        <p className="text-slate-600">Sin revenue, solo costes (I+D).</p>
+                                    <div className="bg-white p-3 rounded border border-blue-200">
+                                        <span className="font-bold text-blue-700">3. I+D Interno</span>
+                                        <p className="text-slate-600">Solo costes, sin ingresos. Score estratégico alto.</p>
                                     </div>
-                                    <div className="bg-white p-3 rounded border border-blue-100">
-                                        <span className="font-bold text-purple-700">4. Equipo con Tarifas</span>
-                                        <p className="text-slate-600">Recursos con overrides de tarifa.</p>
+                                    <div className="bg-white p-3 rounded border border-orange-200">
+                                        <span className="font-bold text-orange-700">4. Riesgo Cronograma</span>
+                                        <p className="text-slate-600">Proyecto vencido (Fecha fin pasada) con trabajo pendiente.</p>
                                     </div>
-                                    <div className="bg-white p-3 rounded border border-blue-100">
-                                        <span className="font-bold text-indigo-700">5. Con Línea Base</span>
-                                        <p className="text-slate-600">Presupuesto aumentó vs baseline.</p>
+                                    <div className="bg-white p-3 rounded border border-purple-200">
+                                        <span className="font-bold text-purple-700">5. Startup / Diferido</span>
+                                        <p className="text-slate-600">Facturado por adelantado. Genera Pasivo (Deferred Revenue).</p>
                                     </div>
-                                    <div className="bg-white p-3 rounded border border-blue-100">
-                                        <span className="font-bold text-teal-700">6. Hitos (Output)</span>
-                                        <p className="text-slate-600">Revenue por milestones, 40% completado.</p>
-                                    </div>
-                                    <div className="bg-white p-3 rounded border border-blue-100 md:col-span-2">
-                                        <span className="font-bold text-amber-700">7. Facturación Anticipada</span>
-                                        <p className="text-slate-600">Facturado antes de iniciar (Ingreso Diferido).</p>
+                                    <div className="bg-white p-3 rounded border border-amber-200">
+                                        <span className="font-bold text-amber-700">6. High WIP (Activo)</span>
+                                        <p className="text-slate-600">Mucho trabajo realizado sin facturar. Genera Activo (WIP).</p>
                                     </div>
                                 </div>
                             </div>
