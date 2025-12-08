@@ -38,10 +38,10 @@ export default function NewContractPage() {
             const newContract: Contract = {
                 id: crypto.randomUUID(),
                 title: formData.title,
-                code: formData.code || undefined,
+                code: formData.code || null,
                 clientId: formData.clientId,
                 tcv: Number(formData.tcv),
-                acquisitionCost: formData.acquisitionCost ? Number(formData.acquisitionCost) : undefined,
+                acquisitionCost: formData.acquisitionCost ? Number(formData.acquisitionCost) : null,
                 startDate: formData.startDate,
                 endDate: formData.endDate,
                 status: 'Active'

@@ -71,7 +71,7 @@ export default function EditContractClient({ id }: { id: string }) {
             const updatedContract: Contract = {
                 ...contract,
                 title: formData.title,
-                code: formData.code || undefined,
+                code: formData.code || null,
                 clientId: formData.clientId,
                 tcv: Number(formData.tcv),
                 acquisitionCost: Number(formData.acquisitionCost),

@@ -41,11 +41,11 @@ export interface Milestone {
 
 export interface Contract {
     id: string;
-    code?: string; // Short identifier (e.g., C-2024-001)
+    code?: string | null; // Short identifier (e.g., C-2024-001)
     title: string;
     clientId: string;
     tcv: number; // Total Contract Value
-    acquisitionCost?: number; // Coste de Adquisición (CAC)
+    acquisitionCost?: number | null; // Coste de Adquisición (CAC)
     startDate: string;
     endDate: string;
     status: 'Active' | 'Closed';
