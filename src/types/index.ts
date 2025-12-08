@@ -24,6 +24,8 @@ export interface WorkLog {
     amount: number; // Revenue recognized
     hours?: number; // Optional for T&M
     billedInvoiceId?: string; // Link to invoice if billed
+    resourceId?: string; // Link to the resource performing the work
+    costAmount?: number; // Calculated: hours * resource.costRate
 }
 
 export type RevenueMethod = 'Input' | 'Output' | 'Linear';
@@ -95,6 +97,22 @@ export interface Project {
         progress: number;
         lastUpdated: string;
     };
+
+    // Baseline & Changelog
+    // Baseline & Changelog
+    originalBaseline?: ProjectBaseline;
+    changeLog?: { date: string; description: string; previousBudget: number; newBudget: number }[];
+
+    // Resource Management
+    team?: ProjectResource[]; // Assigned members with potential rate overrides
+}
+
+export interface ProjectBaseline {
+    capturedAt: string;
+    budget: number;
+    startDate?: string;
+    endDate?: string;
+    totalEstimatedCosts?: number;
 }
 
 export interface ProjectPhase {
@@ -162,4 +180,29 @@ export interface MonthlyStatement {
     }[];
 }
 
-export type BillingStatus = 'UpToDate' | 'ReadyToBill' | 'Overdue';
+
+export interface Resource {
+    id: string;
+    name: string;
+    role: string;
+    costRate: number; // Internal hourly cost
+    billRate: number; // Standard billable rate
+    currency: string;
+    active: boolean;
+}
+
+export interface ProjectResource extends Resource {
+    // Allows overriding rates for a specific project
+    overrideCostRate?: number;
+    overrideBillRate?: number;
+}
+
+export interface SystemChange {
+    id: string;
+    date: string; // ISO String
+    version?: string;
+    title: string;
+    description: string;
+    reasoning: string;
+    category: 'Feature' | 'Bugfix' | 'Refactor' | 'Performance';
+}

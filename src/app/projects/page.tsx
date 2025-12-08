@@ -6,9 +6,15 @@ import { Project } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Plus, Trash2, Pencil } from 'lucide-react';
+import { Plus, Trash2, Pencil, Info } from 'lucide-react';
 import { calculateProjectRevenue } from '@/utils/calculations';
 import { useTranslation } from '@/context/LanguageContext';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 
 export default function ProjectsPage() {
@@ -94,11 +100,43 @@ export default function ProjectsPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-5 gap-4 text-sm">
-                                    <div>
+                                    <div className="flex flex-col gap-1">
                                         <p className="text-primary-dark/60">{t('projects.card.budget')}</p>
                                         <p className="font-medium text-primary-dark">{project.budget.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                                     </div>
-                                    <div>
+                                    <div className="flex flex-col gap-1 relative">
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div className="absolute -top-5 left-0 flex gap-1 cursor-help w-fit">
+                                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-slate-300 text-slate-600 bg-white hover:bg-slate-50">
+                                                            {project.type === 'Fixed' ? 'Fixed Price' : project.type === 'TM' ? 'T&M' : 'Interno'}
+                                                        </Badge>
+                                                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-100 text-slate-600 hover:bg-slate-200">
+                                                            {project.revenueMethod}
+                                                        </Badge>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <div className="space-y-2">
+                                                        <div>
+                                                            <p className="font-semibold text-xs text-slate-500 mb-0.5">Tipo de Proyecto</p>
+                                                            <p className="font-medium">{project.type === 'Fixed' ? 'Precio Fijo' : project.type === 'TM' ? 'Tiempo y Materiales' : 'Interno'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-xs text-slate-500 mb-0.5">Método de Valoración: {project.revenueMethod}</p>
+                                                            <p className="text-xs max-w-[200px] text-slate-300">
+                                                                {project.revenueMethod === 'Input'
+                                                                    ? 'Basado en coste incurrido / coste total estimado.'
+                                                                    : project.revenueMethod === 'Output'
+                                                                        ? 'Basado en % de hitos completados.'
+                                                                        : 'Lineal proporcional al tiempo transcurrido.'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                         <p className="text-primary-dark/60">{t('projects.card.revenue')}</p>
                                         <p className="font-medium text-primary-dark">{revenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                                     </div>
